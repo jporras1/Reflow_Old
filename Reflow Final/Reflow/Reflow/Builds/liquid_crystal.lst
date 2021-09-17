@@ -1,0 +1,1396 @@
+   1               		.file	"liquid_crystal.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 148               	.global	initLCD
+ 150               	initLCD:
+   1:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //
+   2:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //  liquid_crystal.c
+   3:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //  Index
+   4:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //
+   5:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //  Created by Javier Porras jr on 4/6/21.
+   6:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //  Copyright © 2021 Javier Porras jr. All rights reserved.
+   7:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //
+   8:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+   9:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** #include "machine.h"
+  10:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  11:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** #define INIT_STEPS 12
+  12:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** uint8_t initial[INIT_STEPS] = {
+  13:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     0x3, 0x3, 0x3,
+  14:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     0x2, 0x2, 0x8,
+  15:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     0x0, 0xC, 0x0,
+  16:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     0x1, 0x0, 0x6
+  17:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** };
+  18:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  19:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** uint8_t dataPort[4] = {
+  20:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_D0_BIT,
+  21:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_D1_BIT,
+  22:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_D2_BIT,
+  23:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_D3_BIT
+  24:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** };
+  25:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  26:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** //Only words if the LCD all in one port.
+  27:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void initLCD(){
+ 152               	.LM0:
+ 153               	.LFBB1:
+ 154               	/* prologue: function */
+ 155               	/* frame size = 0 */
+ 156               	/* stack size = 0 */
+ 157               	.L__stack_usage = 0
+  28:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t b;
+  29:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_DDR |= (LCD_RS_MASK | LCD_EN_MASK | LCD_DATA_BIT_MASK);
+ 159               	.LM1:
+ 160 0000 8AB3      		in r24,0x1a
+ 161 0002 8C6F      		ori r24,lo8(-4)
+ 162 0004 8ABB      		out 0x1a,r24
+  30:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT &= ~(LCD_RS_MASK | LCD_EN_MASK | LCD_DATA_BIT_MASK);
+ 164               	.LM2:
+ 165 0006 8BB3      		in r24,0x1b
+ 166 0008 8370      		andi r24,lo8(3)
+ 167 000a 8BBB      		out 0x1b,r24
+ 168               	.LBB40:
+ 169               	.LBB41:
+ 170               	.LBB42:
+ 171               	.LBB43:
+ 173               	.Ltext1:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    All rights reserved.
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      distribution.
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* $Id: delay_basic.h 2453 2014-10-19 08:18:11Z saaadhu $ */
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_1(uint8_t __count) __attribute__((__always_inline__));
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_2(uint16_t __count) __attribute__((__always_inline__));
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #endif
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \file */
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \code
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \endcode
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     to the overall delay time.
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     register.
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     can be achieved.
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	);
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** }
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     counter register pair.
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****  */
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 175               	.LM3:
+ 176 000c 88EE      		ldi r24,lo8(-24)
+ 177 000e 93E0      		ldi r25,lo8(3)
+ 178               	/* #APP */
+ 179               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 180 0010 0197      		1: sbiw r24,1
+ 181 0012 01F4      		brne 1b
+ 182               	 ;  0 "" 2
+ 183               	/* #NOAPP */
+ 184 0014 E0E0      		ldi r30,lo8(initial)
+ 185 0016 F0E0      		ldi r31,hi8(initial)
+ 186               	.LBE43:
+ 187               	.LBE42:
+ 188               	.LBE41:
+ 189               	.LBE40:
+ 191               	.Ltext2:
+  31:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     _delay_ms(4);
+  32:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  33:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     //actual init
+  34:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t n;
+  35:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for (n = 0; n<INIT_STEPS; n++) {
+  36:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_PORT = 0;
+  37:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         
+  38:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         for (b =0 ; b < 4; b++) {
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             if (((initial[n] >> b) & 0x1) == 0x1) {
+  40:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****                 LCD_PORT |= (1 << dataPort[b]);
+ 193               	.LM4:
+ 194 0018 61E0      		ldi r22,lo8(1)
+ 195 001a 70E0      		ldi r23,0
+ 196               	.LBB44:
+ 197               	.LBB45:
+ 198               	.LBB46:
+ 199               	.LBB47:
+ 201               	.Ltext3:
+ 203               	.LM5:
+ 204 001c 44EF      		ldi r20,lo8(-12)
+ 205 001e 51E0      		ldi r21,lo8(1)
+ 206               	.L4:
+ 207               	.LBE47:
+ 208               	.LBE46:
+ 209               	.LBE45:
+ 210               	.LBE44:
+ 212               	.Ltext4:
+  36:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         
+ 214               	.LM6:
+ 215 0020 1BBA      		out 0x1b,__zero_reg__
+ 216 0022 90E0      		ldi r25,0
+ 217 0024 80E0      		ldi r24,0
+ 218               	.L3:
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****                 LCD_PORT |= (1 << dataPort[b]);
+ 220               	.LM7:
+ 221 0026 2081      		ld r18,Z
+ 222 0028 30E0      		ldi r19,0
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****                 LCD_PORT |= (1 << dataPort[b]);
+ 224               	.LM8:
+ 225 002a 082E      		mov r0,r24
+ 226 002c 00C0      		rjmp 2f
+ 227               		1:
+ 228 002e 3595      		asr r19
+ 229 0030 2795      		ror r18
+ 230               		2:
+ 231 0032 0A94      		dec r0
+ 232 0034 02F4      		brpl 1b
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****                 LCD_PORT |= (1 << dataPort[b]);
+ 234               	.LM9:
+ 235 0036 20FF      		sbrs r18,0
+ 236 0038 00C0      		rjmp .L2
+ 238               	.LM10:
+ 239 003a 2BB3      		in r18,0x1b
+ 241               	.LM11:
+ 242 003c DC01      		movw r26,r24
+ 243 003e A050      		subi r26,lo8(-(dataPort))
+ 244 0040 B040      		sbci r27,hi8(-(dataPort))
+ 245 0042 3C91      		ld r19,X
+ 247               	.LM12:
+ 248 0044 DB01      		movw r26,r22
+ 249 0046 00C0      		rjmp 2f
+ 250               		1:
+ 251 0048 AA0F      		lsl r26
+ 252               		2:
+ 253 004a 3A95      		dec r19
+ 254 004c 02F4      		brpl 1b
+ 256               	.LM13:
+ 257 004e 2A2B      		or r18,r26
+ 258 0050 2BBB      		out 0x1b,r18
+ 259               	.L2:
+ 260 0052 0196      		adiw r24,1
+  38:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             if (((initial[n] >> b) & 0x1) == 0x1) {
+ 262               	.LM14:
+ 263 0054 8430      		cpi r24,4
+ 264 0056 9105      		cpc r25,__zero_reg__
+ 265 0058 01F4      		brne .L3
+ 266               	.LBB51:
+ 267               	.LBB50:
+ 268               	.LBB49:
+ 269               	.LBB48:
+ 271               	.Ltext5:
+ 273               	.LM15:
+ 274 005a CA01      		movw r24,r20
+ 275               	/* #APP */
+ 276               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 277 005c 0197      		1: sbiw r24,1
+ 278 005e 01F4      		brne 1b
+ 279               	 ;  0 "" 2
+ 280               	/* #NOAPP */
+ 281               	.LBE48:
+ 282               	.LBE49:
+ 283               	.LBE50:
+ 284               	.LBE51:
+ 286               	.Ltext6:
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             }
+  42:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         }
+  43:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         _delay_ms(2);
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_PORT |= LCD_EN_MASK;
+ 288               	.LM16:
+ 289 0060 DB9A      		sbi 0x1b,3
+ 290               	.LBB52:
+ 291               	.LBB53:
+ 292               	.LBB54:
+ 293               	.LBB55:
+ 295               	.Ltext7:
+ 297               	.LM17:
+ 298 0062 CA01      		movw r24,r20
+ 299               	/* #APP */
+ 300               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 301 0064 0197      		1: sbiw r24,1
+ 302 0066 01F4      		brne 1b
+ 303               	 ;  0 "" 2
+ 304               	/* #NOAPP */
+ 305               	.LBE55:
+ 306               	.LBE54:
+ 307               	.LBE53:
+ 308               	.LBE52:
+ 310               	.Ltext8:
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         _delay_ms(2);
+  46:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_PORT &= ~LCD_EN_MASK;
+ 312               	.LM18:
+ 313 0068 DB98      		cbi 0x1b,3
+ 314               	.LBB56:
+ 315               	.LBB57:
+ 316               	.LBB58:
+ 317               	.LBB59:
+ 319               	.Ltext9:
+ 321               	.LM19:
+ 322 006a CA01      		movw r24,r20
+ 323               	/* #APP */
+ 324               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 325 006c 0197      		1: sbiw r24,1
+ 326 006e 01F4      		brne 1b
+ 327               	 ;  0 "" 2
+ 328               	/* #NOAPP */
+ 329 0070 3196      		adiw r30,1
+ 330               	.LBE59:
+ 331               	.LBE58:
+ 332               	.LBE57:
+ 333               	.LBE56:
+ 335               	.Ltext10:
+  35:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_PORT = 0;
+ 337               	.LM20:
+ 338 0072 80E0      		ldi r24,hi8(initial+12)
+ 339 0074 E030      		cpi r30,lo8(initial+12)
+ 340 0076 F807      		cpc r31,r24
+ 341 0078 01F4      		brne .L4
+ 342               	/* epilogue start */
+  47:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         _delay_ms(2);
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     }
+  49:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 344               	.LM21:
+ 345 007a 0895      		ret
+ 347               	.Lscope1:
+ 351               	.global	LCD_send
+ 353               	LCD_send:
+  50:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  51:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** /**************************************************************************/
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  54:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void LCD_send(uint8_t data, uint8_t isInstruction){
+ 355               	.LM22:
+ 356               	.LFBB2:
+ 357 007c CF93      		push r28
+ 358 007e DF93      		push r29
+ 359               	/* prologue: function */
+ 360               	/* frame size = 0 */
+ 361               	/* stack size = 2 */
+ 362               	.L__stack_usage = 2
+ 363 0080 D62F      		mov r29,r22
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t upperNibble = ((data >> 4) & LOWER_NIBBLE_MASK);
+ 365               	.LM23:
+ 366 0082 982F      		mov r25,r24
+ 367 0084 9295      		swap r25
+ 368 0086 9F70      		andi r25,lo8(15)
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t lowerNibble = (data & LOWER_NIBBLE_MASK);
+ 370               	.LM24:
+ 371 0088 C82F      		mov r28,r24
+ 372 008a CF70      		andi r28,lo8(15)
+  57:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t b;
+  58:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  59:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     //Sending Upper Nibble
+  60:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT &= ~LCD_DATA_BIT_MASK;
+ 374               	.LM25:
+ 375 008c 8BB3      		in r24,0x1b
+ 376 008e 8F70      		andi r24,lo8(15)
+ 377 0090 8BBB      		out 0x1b,r24
+ 378 0092 30E0      		ldi r19,0
+ 379 0094 20E0      		ldi r18,0
+  61:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for (b = 0; b < 4; b++) {
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         if (((upperNibble >> b) & 0x1) == 0x1){
+ 381               	.LM26:
+ 382 0096 892F      		mov r24,r25
+ 383 0098 90E0      		ldi r25,0
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT |= (1 << dataPort[b]);
+ 385               	.LM27:
+ 386 009a 61E0      		ldi r22,lo8(1)
+ 387 009c 70E0      		ldi r23,0
+ 388               	.L12:
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT |= (1 << dataPort[b]);
+ 390               	.LM28:
+ 391 009e AC01      		movw r20,r24
+ 392 00a0 022E      		mov r0,r18
+ 393 00a2 00C0      		rjmp 2f
+ 394               		1:
+ 395 00a4 5595      		asr r21
+ 396 00a6 4795      		ror r20
+ 397               		2:
+ 398 00a8 0A94      		dec r0
+ 399 00aa 02F4      		brpl 1b
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT |= (1 << dataPort[b]);
+ 401               	.LM29:
+ 402 00ac 40FF      		sbrs r20,0
+ 403 00ae 00C0      		rjmp .L11
+ 405               	.LM30:
+ 406 00b0 4BB3      		in r20,0x1b
+ 408               	.LM31:
+ 409 00b2 F901      		movw r30,r18
+ 410 00b4 E050      		subi r30,lo8(-(dataPort))
+ 411 00b6 F040      		sbci r31,hi8(-(dataPort))
+ 412 00b8 5081      		ld r21,Z
+ 414               	.LM32:
+ 415 00ba FB01      		movw r30,r22
+ 416 00bc 00C0      		rjmp 2f
+ 417               		1:
+ 418 00be EE0F      		lsl r30
+ 419               		2:
+ 420 00c0 5A95      		dec r21
+ 421 00c2 02F4      		brpl 1b
+ 423               	.LM33:
+ 424 00c4 4E2B      		or r20,r30
+ 425 00c6 4BBB      		out 0x1b,r20
+ 426               	.L11:
+ 427 00c8 2F5F      		subi r18,-1
+ 428 00ca 3F4F      		sbci r19,-1
+  61:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for (b = 0; b < 4; b++) {
+ 430               	.LM34:
+ 431 00cc 2430      		cpi r18,4
+ 432 00ce 3105      		cpc r19,__zero_reg__
+ 433 00d0 01F4      		brne .L12
+  64:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         }
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     }
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     delayMicroseconds(200);
+ 435               	.LM35:
+ 436 00d2 88EC      		ldi r24,lo8(-56)
+ 437 00d4 90E0      		ldi r25,0
+ 438 00d6 00D0      		rcall delayMicroseconds
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     if (!isInstruction) { LCD_PORT |= LCD_RS_MASK; }
+ 440               	.LM36:
+ 441 00d8 D111      		cpse r29,__zero_reg__
+ 442 00da 00C0      		rjmp .L13
+ 444               	.LM37:
+ 445 00dc DA9A      		sbi 0x1b,2
+ 446               	.L13:
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT |= LCD_EN_MASK;
+ 448               	.LM38:
+ 449 00de DB9A      		sbi 0x1b,3
+  70:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     delayMicroseconds(200);
+ 451               	.LM39:
+ 452 00e0 88EC      		ldi r24,lo8(-56)
+ 453 00e2 90E0      		ldi r25,0
+ 454 00e4 00D0      		rcall delayMicroseconds
+  71:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT &= ~LCD_EN_MASK;
+ 456               	.LM40:
+ 457 00e6 DB98      		cbi 0x1b,3
+  73:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     if (!isInstruction) { LCD_PORT &= ~LCD_RS_MASK; }
+ 459               	.LM41:
+ 460 00e8 D111      		cpse r29,__zero_reg__
+ 461 00ea 00C0      		rjmp .L14
+ 463               	.LM42:
+ 464 00ec DA98      		cbi 0x1b,2
+ 465               	.L14:
+  74:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  75:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     //sending lowerNibble
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT &= ~LCD_DATA_BIT_MASK;
+ 467               	.LM43:
+ 468 00ee 8BB3      		in r24,0x1b
+ 469 00f0 8F70      		andi r24,lo8(15)
+ 470 00f2 8BBB      		out 0x1b,r24
+ 471 00f4 30E0      		ldi r19,0
+ 472 00f6 20E0      		ldi r18,0
+  77:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for (b = 0; b < 4; b++) {
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         if (((lowerNibble >> b) & 0x1) == 0x1){
+ 474               	.LM44:
+ 475 00f8 8C2F      		mov r24,r28
+ 476 00fa 90E0      		ldi r25,0
+  79:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT += (1 << dataPort[b]);
+ 478               	.LM45:
+ 479 00fc 61E0      		ldi r22,lo8(1)
+ 480 00fe 70E0      		ldi r23,0
+ 481               	.L16:
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT += (1 << dataPort[b]);
+ 483               	.LM46:
+ 484 0100 AC01      		movw r20,r24
+ 485 0102 022E      		mov r0,r18
+ 486 0104 00C0      		rjmp 2f
+ 487               		1:
+ 488 0106 5595      		asr r21
+ 489 0108 4795      		ror r20
+ 490               		2:
+ 491 010a 0A94      		dec r0
+ 492 010c 02F4      		brpl 1b
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****             LCD_PORT += (1 << dataPort[b]);
+ 494               	.LM47:
+ 495 010e 40FF      		sbrs r20,0
+ 496 0110 00C0      		rjmp .L15
+ 498               	.LM48:
+ 499 0112 4BB3      		in r20,0x1b
+ 501               	.LM49:
+ 502 0114 F901      		movw r30,r18
+ 503 0116 E050      		subi r30,lo8(-(dataPort))
+ 504 0118 F040      		sbci r31,hi8(-(dataPort))
+ 505 011a 5081      		ld r21,Z
+ 507               	.LM50:
+ 508 011c FB01      		movw r30,r22
+ 509 011e 00C0      		rjmp 2f
+ 510               		1:
+ 511 0120 EE0F      		lsl r30
+ 512               		2:
+ 513 0122 5A95      		dec r21
+ 514 0124 02F4      		brpl 1b
+ 516               	.LM51:
+ 517 0126 4E0F      		add r20,r30
+ 518 0128 4BBB      		out 0x1b,r20
+ 519               	.L15:
+ 520 012a 2F5F      		subi r18,-1
+ 521 012c 3F4F      		sbci r19,-1
+  77:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for (b = 0; b < 4; b++) {
+ 523               	.LM52:
+ 524 012e 2430      		cpi r18,4
+ 525 0130 3105      		cpc r19,__zero_reg__
+ 526 0132 01F4      		brne .L16
+  80:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         }
+  81:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     }
+  82:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     if (!isInstruction) { LCD_PORT |= LCD_RS_MASK; }
+ 528               	.LM53:
+ 529 0134 D111      		cpse r29,__zero_reg__
+ 530 0136 00C0      		rjmp .L17
+ 532               	.LM54:
+ 533 0138 DA9A      		sbi 0x1b,2
+ 534               	.L17:
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT |= LCD_EN_MASK;
+ 536               	.LM55:
+ 537 013a DB9A      		sbi 0x1b,3
+  84:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     delayMicroseconds(200);
+ 539               	.LM56:
+ 540 013c 88EC      		ldi r24,lo8(-56)
+ 541 013e 90E0      		ldi r25,0
+ 542 0140 00D0      		rcall delayMicroseconds
+  85:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+  86:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_PORT &= ~LCD_EN_MASK;
+ 544               	.LM57:
+ 545 0142 DB98      		cbi 0x1b,3
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     if (!isInstruction) { LCD_PORT &= ~LCD_RS_MASK; }
+ 547               	.LM58:
+ 548 0144 D111      		cpse r29,__zero_reg__
+ 549 0146 00C0      		rjmp .L18
+ 551               	.LM59:
+ 552 0148 DA98      		cbi 0x1b,2
+ 553               	.L18:
+  88:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     delayMicroseconds(200);
+ 555               	.LM60:
+ 556 014a 88EC      		ldi r24,lo8(-56)
+ 557 014c 90E0      		ldi r25,0
+ 558               	/* epilogue start */
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 560               	.LM61:
+ 561 014e DF91      		pop r29
+ 562 0150 CF91      		pop r28
+  88:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     delayMicroseconds(200);
+ 564               	.LM62:
+ 565 0152 00C0      		rjmp delayMicroseconds
+ 571               	.Lscope2:
+ 573               	.global	LCD_clear
+ 575               	LCD_clear:
+  90:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  91:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** /*************************************************************************/
+  92:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+  93:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void LCD_clear(){
+ 577               	.LM63:
+ 578               	.LFBB3:
+ 579               	/* prologue: function */
+ 580               	/* frame size = 0 */
+ 581               	/* stack size = 0 */
+ 582               	.L__stack_usage = 0
+  94:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_send(0x01, true);
+ 584               	.LM64:
+ 585 0154 61E0      		ldi r22,lo8(1)
+ 586 0156 81E0      		ldi r24,lo8(1)
+ 587 0158 00D0      		rcall LCD_send
+ 588               	.LBB60:
+ 589               	.LBB61:
+ 590               	.LBB62:
+ 591               	.LBB63:
+ 593               	.Ltext11:
+ 595               	.LM65:
+ 596 015a 84EC      		ldi r24,lo8(-60)
+ 597 015c 99E0      		ldi r25,lo8(9)
+ 598               	/* #APP */
+ 599               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 600 015e 0197      		1: sbiw r24,1
+ 601 0160 01F4      		brne 1b
+ 602               	 ;  0 "" 2
+ 603               	/* #NOAPP */
+ 604               	/* epilogue start */
+ 605               	.LBE63:
+ 606               	.LBE62:
+ 607               	.LBE61:
+ 608               	.LBE60:
+ 610               	.Ltext12:
+  95:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     _delay_ms(10);
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 612               	.LM66:
+ 613 0162 0895      		ret
+ 615               	.Lscope3:
+ 618               	.global	LCD_changeAddress
+ 620               	LCD_changeAddress:
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void LCD_changeAddress(uint8_t address){
+ 622               	.LM67:
+ 623               	.LFBB4:
+ 624               	/* prologue: function */
+ 625               	/* frame size = 0 */
+ 626               	/* stack size = 0 */
+ 627               	.L__stack_usage = 0
+  98:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     address |= 0x80;
+  99:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_send(address, true);
+ 629               	.LM68:
+ 630 0164 61E0      		ldi r22,lo8(1)
+ 631 0166 8068      		ori r24,lo8(-128)
+ 632 0168 00C0      		rjmp LCD_send
+ 634               	.Lscope4:
+ 637               	.global	LCD_sendString
+ 639               	LCD_sendString:
+ 100:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 101:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void LCD_sendString(char string[]){
+ 641               	.LM69:
+ 642               	.LFBB5:
+ 643 016a 0F93      		push r16
+ 644 016c 1F93      		push r17
+ 645 016e CF93      		push r28
+ 646 0170 DF93      		push r29
+ 647               	/* prologue: function */
+ 648               	/* frame size = 0 */
+ 649               	/* stack size = 4 */
+ 650               	.L__stack_usage = 4
+ 102:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t n;
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     uint8_t size;
+ 104:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+ 105:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     size = strlen(string);
+ 652               	.LM70:
+ 653 0172 EC01      		movw r28,r24
+ 654               		0:
+ 655 0174 0990      		ld __tmp_reg__,Y+
+ 656 0176 0020      		tst __tmp_reg__
+ 657 0178 01F4      		brne 0b
+ 658 017a 2197      		sbiw r28,1
+ 660               	.LM71:
+ 661 017c C81B      		sub r28,r24
+ 662 017e D82F      		mov r29,r24
+ 106:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     
+ 107:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     for(n = 0; n<size; n++){
+ 664               	.LM72:
+ 665 0180 8C01      		movw r16,r24
+ 666               	.L30:
+ 668               	.LM73:
+ 669 0182 802F      		mov r24,r16
+ 670 0184 8D1B      		sub r24,r29
+ 671 0186 8C17      		cp r24,r28
+ 672 0188 00F0      		brlo .L31
+ 673               	/* epilogue start */
+ 108:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_send(string[n], false);
+ 109:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     }
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 675               	.LM74:
+ 676 018a DF91      		pop r29
+ 677 018c CF91      		pop r28
+ 678 018e 1F91      		pop r17
+ 679 0190 0F91      		pop r16
+ 680 0192 0895      		ret
+ 681               	.L31:
+ 108:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         LCD_send(string[n], false);
+ 683               	.LM75:
+ 684 0194 60E0      		ldi r22,0
+ 685 0196 F801      		movw r30,r16
+ 686 0198 8191      		ld r24,Z+
+ 687 019a 8F01      		movw r16,r30
+ 688 019c 00D0      		rcall LCD_send
+ 689 019e 00C0      		rjmp .L30
+ 694               	.Lscope5:
+ 696               	.global	lcdPrint
+ 698               	lcdPrint:
+ 111:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 112:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** /************************************************************************/
+ 113:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** /*               Program Specific LCD code below                        */
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 115:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void lcdPrint(char* top, char* bottom){
+ 700               	.LM76:
+ 701               	.LFBB6:
+ 702 01a0 0F93      		push r16
+ 703 01a2 1F93      		push r17
+ 704 01a4 CF93      		push r28
+ 705 01a6 DF93      		push r29
+ 706               	/* prologue: function */
+ 707               	/* frame size = 0 */
+ 708               	/* stack size = 4 */
+ 709               	.L__stack_usage = 4
+ 710 01a8 8C01      		movw r16,r24
+ 711 01aa D62F      		mov r29,r22
+ 712 01ac C72F      		mov r28,r23
+ 116:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_changeAddress(0x00);
+ 714               	.LM77:
+ 715 01ae 80E0      		ldi r24,0
+ 716 01b0 00D0      		rcall LCD_changeAddress
+ 117:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(top);
+ 718               	.LM78:
+ 719 01b2 C801      		movw r24,r16
+ 720 01b4 00D0      		rcall LCD_sendString
+ 118:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_changeAddress(0x40);
+ 722               	.LM79:
+ 723 01b6 80E4      		ldi r24,lo8(64)
+ 724 01b8 00D0      		rcall LCD_changeAddress
+ 119:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(bottom);
+ 726               	.LM80:
+ 727 01ba 8D2F      		mov r24,r29
+ 728 01bc 9C2F      		mov r25,r28
+ 729               	/* epilogue start */
+ 120:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 731               	.LM81:
+ 732 01be DF91      		pop r29
+ 733 01c0 CF91      		pop r28
+ 734 01c2 1F91      		pop r17
+ 735 01c4 0F91      		pop r16
+ 119:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(bottom);
+ 737               	.LM82:
+ 738 01c6 00C0      		rjmp LCD_sendString
+ 740               	.Lscope6:
+ 742               	.global	lcdUpdateTemp
+ 744               	lcdUpdateTemp:
+ 121:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void lcdUpdateTemp(char* temp){
+ 746               	.LM83:
+ 747               	.LFBB7:
+ 748 01c8 CF93      		push r28
+ 749 01ca DF93      		push r29
+ 750               	/* prologue: function */
+ 751               	/* frame size = 0 */
+ 752               	/* stack size = 2 */
+ 753               	.L__stack_usage = 2
+ 754 01cc D82F      		mov r29,r24
+ 755 01ce C92F      		mov r28,r25
+ 123:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_changeAddress(0x46);
+ 757               	.LM84:
+ 758 01d0 86E4      		ldi r24,lo8(70)
+ 759 01d2 00D0      		rcall LCD_changeAddress
+ 124:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(temp);
+ 761               	.LM85:
+ 762 01d4 8D2F      		mov r24,r29
+ 763 01d6 9C2F      		mov r25,r28
+ 764               	/* epilogue start */
+ 125:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 766               	.LM86:
+ 767 01d8 DF91      		pop r29
+ 768 01da CF91      		pop r28
+ 124:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(temp);
+ 770               	.LM87:
+ 771 01dc 00C0      		rjmp LCD_sendString
+ 773               	.Lscope7:
+ 776               	.global	lcdStateUpate
+ 778               	lcdStateUpate:
+ 126:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 127:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void lcdStateUpate(uint8_t state){
+ 780               	.LM88:
+ 781               	.LFBB8:
+ 782 01de CF93      		push r28
+ 783               	/* prologue: function */
+ 784               	/* frame size = 0 */
+ 785               	/* stack size = 1 */
+ 786               	.L__stack_usage = 1
+ 128:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     char symbol_on_off;
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     if (state){
+ 130:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         symbol_on_off = '0';
+ 131:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     } else {
+ 132:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         symbol_on_off = '#';
+ 788               	.LM89:
+ 789 01e0 C3E2      		ldi r28,lo8(35)
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****         symbol_on_off = '0';
+ 791               	.LM90:
+ 792 01e2 8111      		cpse r24,__zero_reg__
+ 130:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     } else {
+ 794               	.LM91:
+ 795 01e4 C0E3      		ldi r28,lo8(48)
+ 796               	.L35:
+ 133:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     }
+ 134:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_changeAddress(0x4F);
+ 798               	.LM92:
+ 799 01e6 8FE4      		ldi r24,lo8(79)
+ 800 01e8 00D0      		rcall LCD_changeAddress
+ 135:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(symbol_on_off);
+ 802               	.LM93:
+ 803 01ea 8C2F      		mov r24,r28
+ 804 01ec 90E0      		ldi r25,0
+ 805               	/* epilogue start */
+ 136:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 807               	.LM94:
+ 808 01ee CF91      		pop r28
+ 135:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(symbol_on_off);
+ 810               	.LM95:
+ 811 01f0 00C0      		rjmp LCD_sendString
+ 816               	.Lscope8:
+ 819               	.global	lcdPrintNumber
+ 821               	lcdPrintNumber:
+ 137:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 138:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 139:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void lcdPrintNumber(int number){
+ 823               	.LM96:
+ 824               	.LFBB9:
+ 825 01f2 CF93      		push r28
+ 826 01f4 DF93      		push r29
+ 827 01f6 00D0      		rcall .
+ 828 01f8 00D0      		rcall .
+ 829 01fa 0F92      		push __tmp_reg__
+ 830 01fc CDB7      		in r28,__SP_L__
+ 831 01fe DEB7      		in r29,__SP_H__
+ 832               	/* prologue: function */
+ 833               	/* frame size = 5 */
+ 834               	/* stack size = 7 */
+ 835               	.L__stack_usage = 7
+ 836               	.LBB64:
+ 837               	.LBB65:
+ 839               	.Ltext13:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Copyright (c) 2004,2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Portions of documentation Copyright (c) 1990, 1991, 1993, 1994
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The Regents of the University of California.
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    All rights reserved.
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Redistribution and use in source and binary forms, with or without
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    modification, are permitted provided that the following conditions are met:
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    * Redistributions of source code must retain the above copyright
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer.
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    * Redistributions in binary form must reproduce the above copyright
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer in
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      the documentation and/or other materials provided with the
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      distribution.
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    * Neither the name of the copyright holders nor the names of
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      contributors may be used to endorse or promote products derived
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      from this software without specific prior written permission.
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   POSSIBILITY OF SUCH DAMAGE.
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****   $Id: stdlib.h 2503 2016-02-07 22:59:47Z joerg_wunsch $
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef _STDLIB_H_
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define	_STDLIB_H_ 1
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ASSEMBLER__
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define __need_NULL
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define __need_size_t
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define __need_wchar_t
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #include <stddef.h>
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ptr_t
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define __ptr_t void *
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif	/* !__DOXYGEN__ */
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifdef __cplusplus
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern "C" {
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** \file */
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** \defgroup avr_stdlib <stdlib.h>: General utilities
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \code #include <stdlib.h> \endcode
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     This file declares some basic C macros and functions as
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     defined by the ISO standard, plus some AVR-specific extensions.
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /*@{*/
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** Result type for function div(). */
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** typedef struct {
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	int quot;                   /**< The Quotient. */
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	int rem;                    /**< The Remainder. */
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** } div_t;
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** Result type for function ldiv(). */
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** typedef struct {
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	long quot;                  /**< The Quotient. */
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	long rem;                   /**< The Remainder. */
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** } ldiv_t;
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** Comparision function type for qsort(), just for convenience. */
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** typedef int (*__compar_fn_t)(const void *, const void *);
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ATTR_CONST__
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # define __ATTR_CONST__ __attribute__((__const__))
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ATTR_MALLOC__
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # define __ATTR_MALLOC__ __attribute__((__malloc__))
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ATTR_NORETURN__
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # define __ATTR_NORETURN__ __attribute__((__noreturn__))
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __ATTR_PURE__
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # define __ATTR_PURE__ __attribute__((__pure__))
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef	__ATTR_GNU_INLINE__
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # ifdef  __GNUC_STDC_INLINE__
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__   __attribute__((__gnu_inline__))
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # else
+ 106:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__
+ 107:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** # endif
+ 108:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+ 109:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 110:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+ 111:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 112:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** The abort() function causes abnormal program termination to occur.
+ 113:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     This realization disables interrupts and jumps to _exit() function
+ 114:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     with argument equal to 1. In the limited AVR environment, execution is
+ 115:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     effectively halted by entering an infinite loop. */
+ 116:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void abort(void) __ATTR_NORETURN__;
+ 117:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 118:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** The abs() function computes the absolute value of the integer \c i.
+ 119:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 120:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 121:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern int abs(int __i) __ATTR_CONST__;
+ 122:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 123:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define	abs(__i) __builtin_abs(__i)
+ 124:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+ 125:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 126:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** The labs() function computes the absolute value of the long integer
+ 127:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \c i.
+ 128:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 129:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 130:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern long labs(long __i) __ATTR_CONST__;
+ 131:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 132:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define labs(__i) __builtin_labs(__i)
+ 133:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #endif
+ 134:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 135:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 136:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The bsearch() function searches an array of \c nmemb objects, the
+ 137:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      initial member of which is pointed to by \c base, for a member
+ 138:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      that matches the object pointed to by \c key.  The size of each
+ 139:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      member of the array is specified by \c size.
+ 140:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 141:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The contents of the array should be in ascending sorted order
+ 142:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      according to the comparison function referenced by \c compar.
+ 143:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The \c compar routine is expected to have two arguments which
+ 144:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      point to the key object and to an array member, in that order,
+ 145:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      and should return an integer less than, equal to, or greater than
+ 146:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      zero if the key object is found, respectively, to be less than,
+ 147:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      to match, or be greater than the array member.
+ 148:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 149:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The bsearch() function returns a pointer to a matching member of
+ 150:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      the array, or a null pointer if no match is found.  If two
+ 151:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      members compare as equal, which member is matched is unspecified.
+ 152:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 153:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void *bsearch(const void *__key, const void *__base, size_t __nmemb,
+ 154:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 		     size_t __size, int (*__compar)(const void *, const void *));
+ 155:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 156:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /* __divmodhi4 and __divmodsi4 from libgcc.a */
+ 157:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 158:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The div() function computes the value \c num/denom and returns
+ 159:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c div_t that
+ 160:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      contains two int members named \c quot and \c rem.
+ 161:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 162:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern div_t div(int __num, int __denom) __asm__("__divmodhi4") __ATTR_CONST__;
+ 163:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 164:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The ldiv() function computes the value \c num/denom and returns
+ 165:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c ldiv_t that
+ 166:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      contains two long integer members named \c quot and \c rem.
+ 167:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 168:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern ldiv_t ldiv(long __num, long __denom) __asm__("__divmodsi4") __ATTR_CONST__;
+ 169:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 170:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 171:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The qsort() function is a modified partition-exchange sort, or
+ 172:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      quicksort.
+ 173:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 174:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The qsort() function sorts an array of \c nmemb objects, the
+ 175:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      initial member of which is pointed to by \c base.  The size of
+ 176:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      each object is specified by \c size.  The contents of the array
+ 177:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      base are sorted in ascending order according to a comparison
+ 178:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      function pointed to by \c compar, which requires two arguments
+ 179:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      pointing to the objects being compared.
+ 180:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 181:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The comparison function must return an integer less than, equal
+ 182:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      to, or greater than zero if the first argument is considered to
+ 183:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      be respectively less than, equal to, or greater than the second.
+ 184:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 185:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void qsort(void *__base, size_t __nmemb, size_t __size,
+ 186:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 		  __compar_fn_t __compar);
+ 187:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 188:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 189:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The strtol() function converts the string in \c nptr to a long
+ 190:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     value.  The conversion is done according to the given base, which
+ 191:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     must be between 2 and 36 inclusive, or be the special value 0.
+ 192:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 193:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 194:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 195:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 196:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 197:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 198:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 199:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 200:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The remainder of the string is converted to a long value in the
+ 201:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     obvious manner, stopping at the first character which is not a
+ 202:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     valid digit in the given base.  (In bases above 10, the letter \c 'A'
+ 203:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     in either upper or lower case represents 10, \c 'B' represents 11,
+ 204:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     and so forth, with \c 'Z' representing 35.)
+ 205:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 206:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     If \c endptr is not NULL, strtol() stores the address of the first
+ 207:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 208:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     however, strtol() stores the original value of \c nptr in \c
+ 209:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 210:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 211:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 212:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The strtol() function returns the result of the conversion, unless
+ 213:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     the value would underflow or overflow.  If no conversion could be
+ 214:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     performed, 0 is returned.  If an overflow or underflow occurs, \c
+ 215:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE" and the function return value
+ 216:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     is clamped to \c LONG_MIN or \c LONG_MAX, respectively.
+ 217:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 218:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern long strtol(const char *__nptr, char **__endptr, int __base);
+ 219:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 220:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 221:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The strtoul() function converts the string in \c nptr to an
+ 222:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     unsigned long value.  The conversion is done according to the
+ 223:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     given base, which must be between 2 and 36 inclusive, or be the
+ 224:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     special value 0.
+ 225:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 226:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 227:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 228:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 229:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 230:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 231:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 232:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 233:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The remainder of the string is converted to an unsigned long value
+ 234:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     in the obvious manner, stopping at the first character which is
+ 235:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     not a valid digit in the given base.  (In bases above 10, the
+ 236:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     letter \c 'A' in either upper or lower case represents 10, \c 'B'
+ 237:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     represents 11, and so forth, with \c 'Z' representing 35.)
+ 238:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 239:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     If \c endptr is not NULL, strtoul() stores the address of the first
+ 240:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 241:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     however, strtoul() stores the original value of \c nptr in \c
+ 242:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 243:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 244:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 245:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The strtoul() function return either the result of the conversion
+ 246:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     or, if there was a leading minus sign, the negation of the result
+ 247:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     of the conversion, unless the original (non-negated) value would
+ 248:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     overflow; in the latter case, strtoul() returns ULONG_MAX, and \c
+ 249:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE".  If no conversion could 
+ 250:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     be performed, 0 is returned.
+ 251:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 252:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern unsigned long strtoul(const char *__nptr, char **__endptr, int __base);
+ 253:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 254:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 255:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The atol() function converts the initial portion of the string
+ 256:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     pointed to by \p s to long integer representation. In contrast to
+ 257:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 258:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****         \code strtol(s, (char **)NULL, 10); \endcode
+ 259:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 260:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 261:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 262:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     stack) and works more quickly.
+ 263:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 264:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern long atol(const char *__s) __ATTR_PURE__;
+ 265:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 266:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 267:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     The atoi() function converts the initial portion of the string
+ 268:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     pointed to by \p s to integer representation. In contrast to
+ 269:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 270:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****         \code (int)strtol(s, (char **)NULL, 10); \endcode
+ 271:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 272:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 273:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 274:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     stack) and works more quickly.
+ 275:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 276:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern int atoi(const char *__s) __ATTR_PURE__;
+ 277:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 278:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 279:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The exit() function terminates the application.  Since there is no
+ 280:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    environment to return to, \c status is ignored, and code execution
+ 281:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    will eventually reach an infinite loop, thereby effectively halting
+ 282:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    all code processing.  Before entering the infinite loop, interrupts
+ 283:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    are globally disabled.
+ 284:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 285:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    In a C++ context, global destructors will be called before halting
+ 286:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    execution.
+ 287:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 288:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void exit(int __status) __ATTR_NORETURN__;
+ 289:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 290:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 291:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The malloc() function allocates \c size bytes of memory.
+ 292:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    If malloc() fails, a NULL pointer is returned.
+ 293:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 294:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Note that malloc() does \e not initialize the returned memory to
+ 295:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    zero bytes.
+ 296:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 297:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    See the chapter about \ref malloc "malloc() usage" for implementation
+ 298:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    details.
+ 299:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 300:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void *malloc(size_t __size) __ATTR_MALLOC__;
+ 301:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 302:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 303:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The free() function causes the allocated memory referenced by \c
+ 304:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    ptr to be made available for future allocations.  If \c ptr is
+ 305:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    NULL, no action occurs.
+ 306:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 307:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void free(void *__ptr);
+ 308:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 309:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 310:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 311:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 312:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern size_t __malloc_margin;
+ 313:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 314:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 315:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 316:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 317:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern char *__malloc_heap_start;
+ 318:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 319:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 320:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 321:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 322:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern char *__malloc_heap_end;
+ 323:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 324:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 325:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Allocate \c nele elements of \c size each.  Identical to calling
+ 326:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \c malloc() using <tt>nele * size</tt> as argument, except the
+ 327:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    allocated memory will be cleared to zero.
+ 328:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 329:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void *calloc(size_t __nele, size_t __size) __ATTR_MALLOC__;
+ 330:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 331:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 332:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The realloc() function tries to change the size of the region
+ 333:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    allocated at \c ptr to the new \c size value.  It returns a
+ 334:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    pointer to the new region.  The returned pointer might be the
+ 335:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    same as the old pointer, or a pointer to a completely different
+ 336:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    region.
+ 337:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 338:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The contents of the returned region up to either the old or the new
+ 339:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    size value (whatever is less) will be identical to the contents of
+ 340:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    the old region, even in case a new region had to be allocated.
+ 341:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 342:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    It is acceptable to pass \c ptr as NULL, in which case realloc()
+ 343:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    will behave identical to malloc().
+ 344:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 345:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    If the new memory cannot be allocated, realloc() returns NULL, and
+ 346:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    the region at \c ptr will not be changed.
+ 347:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 348:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void *realloc(void *__ptr, size_t __size) __ATTR_MALLOC__;
+ 349:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 350:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern double strtod(const char *__nptr, char **__endptr);
+ 351:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 352:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern double atof(const char *__nptr);
+ 353:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 354:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** Highest number that can be generated by rand(). */
+ 355:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #define	RAND_MAX 0x7FFF
+ 356:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 357:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 358:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The rand() function computes a sequence of pseudo-random integers in the
+ 359:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      range of 0 to \c RAND_MAX (as defined by the header file <stdlib.h>).
+ 360:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 361:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      The srand() function sets its argument \c seed as the seed for a new
+ 362:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      sequence of pseudo-random numbers to be returned by rand().  These
+ 363:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      sequences are repeatable by calling srand() with the same seed value.
+ 364:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 365:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      If no seed value is provided, the functions are automatically seeded with
+ 366:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      a value of 1.
+ 367:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 368:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      In compliance with the C standard, these functions operate on
+ 369:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      \c int arguments.  Since the underlying algorithm already uses
+ 370:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      32-bit calculations, this causes a loss of precision.  See
+ 371:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      \c random() for an alternate set of functions that retains full
+ 372:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****      32-bit precision.
+ 373:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 374:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern int rand(void);
+ 375:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 376:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Pseudo-random number generator seeding; see rand().
+ 377:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 378:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern void srand(unsigned int __seed);
+ 379:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 380:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 381:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Variant of rand() that stores the context in the user-supplied
+ 382:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    variable located at \c ctx instead of a static library variable
+ 383:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    so the function becomes re-entrant.
+ 384:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 385:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern int rand_r(unsigned long *__ctx);
+ 386:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /*@}*/
+ 387:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 388:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /*@{*/
+ 389:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /** \name Non-standard (i.e. non-ISO C) functions.
+ 390:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****  \ingroup avr_stdlib
+ 391:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 392:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** /**
+ 393:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \brief Convert an integer to a string.
+ 394:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 395:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The function itoa() converts the integer value from \c val into an
+ 396:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    ASCII representation that will be stored under \c s.  The caller
+ 397:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    is responsible for providing sufficient storage in \c s.
+ 398:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 399:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \note The minimal size of the buffer \c s depends on the choice of
+ 400:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    radix. For example, if the radix is 2 (binary), you need to supply a buffer
+ 401:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    with a minimal length of 8 * sizeof (int) + 1 characters, i.e. one
+ 402:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    character for each bit plus one for the string terminator. Using a larger
+ 403:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    radix will require a smaller minimal buffer size.
+ 404:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 405:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \warning If the buffer is too small, you risk a buffer overflow.
+ 406:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 407:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    Conversion is done using the \c radix as base, which may be a
+ 408:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    number between 2 (binary conversion) and up to 36.  If \c radix
+ 409:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    is greater than 10, the next digit after \c '9' will be the letter
+ 410:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    \c 'a'.
+ 411:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     
+ 412:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     If radix is 10 and val is negative, a minus sign will be prepended.
+ 413:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 
+ 414:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****    The itoa() function returns the pointer passed as \c s.
+ 415:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** */
+ 416:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #ifdef  __DOXYGEN__
+ 417:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern char *itoa(int val, char *s, int radix);
+ 418:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** #else
+ 419:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** extern __inline__ __ATTR_GNU_INLINE__
+ 420:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** char *itoa (int __val, char *__s, int __radix)
+ 421:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** {
+ 422:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     if (!__builtin_constant_p (__radix)) {
+ 423:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	extern char *__itoa (int, char *, int);
+ 424:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	return __itoa (__val, __s, __radix);
+ 425:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     } else if (__radix < 2 || __radix > 36) {
+ 426:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	*__s = 0;
+ 427:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	return __s;
+ 428:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h ****     } else {
+ 429:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	extern char *__itoa_ncheck (int, char *, unsigned char);
+ 430:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/stdlib.h **** 	return __itoa_ncheck (__val, __s, __radix);
+ 841               	.LM97:
+ 842 0200 4AE0      		ldi r20,lo8(10)
+ 843 0202 BE01      		movw r22,r28
+ 844 0204 6F5F      		subi r22,-1
+ 845 0206 7F4F      		sbci r23,-1
+ 846 0208 00D0      		rcall __itoa_ncheck
+ 847               	.LBE65:
+ 848               	.LBE64:
+ 850               	.Ltext14:
+ 140:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     char numberToPrint[5];
+ 141:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     itoa(number, numberToPrint, 10);
+ 142:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     //dtostrf(double __val, signed char __width, unsigned char __prec, char *__s)
+ 143:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     //    LCD_send('5', 0);
+ 144:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(numberToPrint);
+ 852               	.LM98:
+ 853 020a CE01      		movw r24,r28
+ 854 020c 0196      		adiw r24,1
+ 855 020e 00D0      		rcall LCD_sendString
+ 856               	/* epilogue start */
+ 145:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 858               	.LM99:
+ 859 0210 0F90      		pop __tmp_reg__
+ 860 0212 0F90      		pop __tmp_reg__
+ 861 0214 0F90      		pop __tmp_reg__
+ 862 0216 0F90      		pop __tmp_reg__
+ 863 0218 0F90      		pop __tmp_reg__
+ 864 021a DF91      		pop r29
+ 865 021c CF91      		pop r28
+ 866 021e 0895      		ret
+ 871               	.Lscope9:
+ 873               	.global	lcdPrintDouble
+ 875               	lcdPrintDouble:
+ 146:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** 
+ 147:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** void lcdPrintDouble(float number){
+ 877               	.LM100:
+ 878               	.LFBB10:
+ 879 0220 0F93      		push r16
+ 880 0222 1F93      		push r17
+ 881 0224 CF93      		push r28
+ 882 0226 DF93      		push r29
+ 883 0228 CDB7      		in r28,__SP_L__
+ 884 022a DEB7      		in r29,__SP_H__
+ 885 022c 2997      		sbiw r28,9
+ 886 022e 0FB6      		in __tmp_reg__,__SREG__
+ 887 0230 F894      		cli
+ 888 0232 DEBF      		out __SP_H__,r29
+ 889 0234 0FBE      		out __SREG__,__tmp_reg__
+ 890 0236 CDBF      		out __SP_L__,r28
+ 891               	/* prologue: function */
+ 892               	/* frame size = 9 */
+ 893               	/* stack size = 13 */
+ 894               	.L__stack_usage = 13
+ 148:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     char numberToPrint[5];
+ 149:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     dtostrf(number, 5, 2, numberToPrint);
+ 896               	.LM101:
+ 897 0238 8E01      		movw r16,r28
+ 898 023a 0F5F      		subi r16,-1
+ 899 023c 1F4F      		sbci r17,-1
+ 900 023e 22E0      		ldi r18,lo8(2)
+ 901 0240 45E0      		ldi r20,lo8(5)
+ 902 0242 6E83      		std Y+6,r22
+ 903 0244 7F83      		std Y+7,r23
+ 904 0246 8887      		std Y+8,r24
+ 905 0248 9987      		std Y+9,r25
+ 906 024a 6E81      		ldd r22,Y+6
+ 907 024c 7F81      		ldd r23,Y+7
+ 908 024e 8885      		ldd r24,Y+8
+ 909 0250 9985      		ldd r25,Y+9
+ 910 0252 00D0      		rcall dtostrf
+ 150:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c ****     LCD_sendString(numberToPrint);
+ 912               	.LM102:
+ 913 0254 C801      		movw r24,r16
+ 914 0256 00D0      		rcall LCD_sendString
+ 915               	/* epilogue start */
+ 151:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/liquid_crystal.c **** }
+ 917               	.LM103:
+ 918 0258 2996      		adiw r28,9
+ 919 025a 0FB6      		in __tmp_reg__,__SREG__
+ 920 025c F894      		cli
+ 921 025e DEBF      		out __SP_H__,r29
+ 922 0260 0FBE      		out __SREG__,__tmp_reg__
+ 923 0262 CDBF      		out __SP_L__,r28
+ 924 0264 DF91      		pop r29
+ 925 0266 CF91      		pop r28
+ 926 0268 1F91      		pop r17
+ 927 026a 0F91      		pop r16
+ 928 026c 0895      		ret
+ 933               	.Lscope10:
+ 934               	.global	dataPort
+ 935               		.data
+ 938               	dataPort:
+ 939 0000 0405 0607 		.ascii	"\004\005\006\007"
+ 941               	.global	initial
+ 944               	initial:
+ 945 0004 0303 0302 		.string	"\003\003\003\002\002\b"
+ 945      0208 00
+ 946 000b 0C00      		.string	"\f"
+ 947 000d 0100      		.string	"\001"
+ 948 000f 06        		.ascii	"\006"
+ 950               		.comm	relay_state,2,1
+ 952               		.comm	summation,4,1
+ 954               		.comm	targetTemperature,2,1
+ 956               		.comm	adc,2,1
+ 958               		.comm	profiles,92,1
+ 960               		.comm	isInitialChoiceState,1,1
+ 962               		.comm	isInitialState,1,1
+ 964               		.comm	profileSelected,1,1
+ 966               		.comm	selectedProfile,1,1
+ 968               		.comm	input,1,1
+ 970               		.comm	stopped,1,1
+ 972               		.comm	started,1,1
+ 974               		.text
+ 976               	.Letext0:
+ 977               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 978               	.global __do_copy_data
+ 979               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 liquid_crystal.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:150    .text:0000000000000000 initLCD
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:944    .data:0000000000000004 initial
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:938    .data:0000000000000000 dataPort
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:353    .text:000000000000007c LCD_send
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:575    .text:0000000000000154 LCD_clear
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:620    .text:0000000000000164 LCD_changeAddress
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:639    .text:000000000000016a LCD_sendString
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:698    .text:00000000000001a0 lcdPrint
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:744    .text:00000000000001c8 lcdUpdateTemp
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:778    .text:00000000000001de lcdStateUpate
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:821    .text:00000000000001f2 lcdPrintNumber
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccli0mUO.s:875    .text:0000000000000220 lcdPrintDouble
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:0000000000000002 adc
+                            *COM*:000000000000005c profiles
+                            *COM*:0000000000000001 isInitialChoiceState
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 stopped
+                            *COM*:0000000000000001 started
+
+UNDEFINED SYMBOLS
+delayMicroseconds
+__itoa_ncheck
+dtostrf
+__do_copy_data
+__do_clear_bss

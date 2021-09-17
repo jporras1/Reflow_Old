@@ -1,0 +1,45 @@
+   1               		.file	"defaults.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 147               		.comm	relay_state,2,1
+ 149               		.comm	summation,4,1
+ 151               		.comm	targetTemperature,2,1
+ 153               		.comm	adc,2,1
+ 155               		.comm	profiles,92,1
+ 157               		.comm	isInitialChoiceState,1,1
+ 159               		.comm	isInitialState,1,1
+ 161               		.comm	profileSelected,1,1
+ 163               		.comm	selectedProfile,1,1
+ 165               		.comm	input,1,1
+ 167               		.comm	stopped,1,1
+ 169               		.comm	started,1,1
+ 172               	.Letext0:
+ 173               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 174               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 defaults.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnGWiEj.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnGWiEj.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnGWiEj.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnGWiEj.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnGWiEj.s:6      *ABS*:0000000000000001 __zero_reg__
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:0000000000000002 adc
+                            *COM*:000000000000005c profiles
+                            *COM*:0000000000000001 isInitialChoiceState
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 stopped
+                            *COM*:0000000000000001 started
+
+UNDEFINED SYMBOLS
+__do_clear_bss

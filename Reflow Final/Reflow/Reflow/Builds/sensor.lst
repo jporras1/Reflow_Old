@@ -1,0 +1,128 @@
+   1               		.file	"sensor.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 148               	.global	initSensor
+ 150               	initSensor:
+   1:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //
+   2:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //  sensor.c
+   3:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //  Index
+   4:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //
+   5:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //  Created by Javier Porras jr on 4/6/21.
+   6:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //  Copyright © 2021 Javier Porras jr. All rights reserved.
+   7:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** //
+   8:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** 
+   9:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** #include "machine.h"
+  10:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** 
+  11:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** void initSensor(void){
+ 152               	.LM0:
+ 153               	.LFBB1:
+ 154               	/* prologue: function */
+ 155               	/* frame size = 0 */
+ 156               	/* stack size = 0 */
+ 157               	.L__stack_usage = 0
+  12:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     //Specific to the Attiny84
+  13:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);     //Prescaler
+ 159               	.LM1:
+ 160 0000 86B1      		in r24,0x6
+ 161 0002 8760      		ori r24,lo8(7)
+ 162 0004 86B9      		out 0x6,r24
+  14:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     ADCSRA |= (1 << ADEN);      //Enable ADC
+ 164               	.LM2:
+ 165 0006 379A      		sbi 0x6,7
+  15:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     
+  16:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     ADMUX  |= (1 << MUX0);
+ 167               	.LM3:
+ 168 0008 389A      		sbi 0x7,0
+  17:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     
+  18:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     sei();                      //Set global Interupt bit
+ 170               	.LM4:
+ 171               	/* #APP */
+ 172               	 ;  18 "/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c" 1
+ 173 000a 7894      		sei
+ 174               	 ;  0 "" 2
+ 175               	/* #NOAPP */
+ 176               	/* epilogue start */
+  19:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     //Start conversion, NOT set here, set during the program execution.
+  20:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     //    ADCSRA |= (1 << ADSC);
+  21:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** }
+ 178               	.LM5:
+ 179 000c 0895      		ret
+ 181               	.Lscope1:
+ 183               	.global	analogRead
+ 185               	analogRead:
+  22:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** 
+  23:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** void analogRead(){
+ 187               	.LM6:
+ 188               	.LFBB2:
+ 189               	/* prologue: function */
+ 190               	/* frame size = 0 */
+ 191               	/* stack size = 0 */
+ 192               	.L__stack_usage = 0
+  24:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     ADCSRA |= (1 << ADSC);
+ 194               	.LM7:
+ 195 000e 369A      		sbi 0x6,6
+ 196               	.L3:
+  25:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** 
+  26:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     while (ADCSRA & (1 << ADSC));
+ 198               	.LM8:
+ 199 0010 3699      		sbic 0x6,6
+ 200 0012 00C0      		rjmp .L3
+  27:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     adc.adcValue.low = ADCL;
+ 202               	.LM9:
+ 203 0014 84B1      		in r24,0x4
+ 205               	.LM10:
+ 206 0016 8093 0000 		sts adc,r24
+  28:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c ****     adc.adcValue.high = ADCH;
+ 208               	.LM11:
+ 209 001a 85B1      		in r24,0x5
+ 211               	.LM12:
+ 212 001c 8093 0000 		sts adc+1,r24
+ 213               	/* epilogue start */
+  29:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/sensor.c **** }
+ 215               	.LM13:
+ 216 0020 0895      		ret
+ 218               	.Lscope2:
+ 219               		.comm	relay_state,2,1
+ 221               		.comm	summation,4,1
+ 223               		.comm	targetTemperature,2,1
+ 225               		.comm	adc,2,1
+ 227               		.comm	profiles,92,1
+ 229               		.comm	isInitialChoiceState,1,1
+ 231               		.comm	isInitialState,1,1
+ 233               		.comm	profileSelected,1,1
+ 235               		.comm	selectedProfile,1,1
+ 237               		.comm	input,1,1
+ 239               		.comm	stopped,1,1
+ 241               		.comm	started,1,1
+ 244               	.Letext0:
+ 245               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 246               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sensor.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:150    .text:0000000000000000 initSensor
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccZ3Film.s:185    .text:000000000000000e analogRead
+                            *COM*:0000000000000002 adc
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:000000000000005c profiles
+                            *COM*:0000000000000001 isInitialChoiceState
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 stopped
+                            *COM*:0000000000000001 started
+
+UNDEFINED SYMBOLS
+__do_clear_bss

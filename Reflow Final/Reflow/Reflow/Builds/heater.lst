@@ -1,0 +1,1462 @@
+   1               		.file	"heater.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 148               	.global	initHeater
+ 150               	initHeater:
+   1:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //
+   2:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //  heater.c
+   3:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //  Index
+   4:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //
+   5:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //  Created by Javier Porras jr on 4/6/21.
+   6:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //  Copyright © 2021 Javier Porras jr. All rights reserved.
+   7:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //
+   8:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+   9:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** #include "machine.h"
+  10:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  11:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** volatile float seconds = 0;  // this will get incremented once a second
+  12:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** volatile long count = 0;
+  13:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** volatile int lcdCount = 0;
+  14:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** volatile float temp = 0;
+  15:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  16:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** enum States state = OFF;
+  17:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  18:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** void initHeater(void){
+ 152               	.LM0:
+ 153               	.LFBB1:
+ 154               	/* prologue: function */
+ 155               	/* frame size = 0 */
+ 156               	/* stack size = 0 */
+ 157               	.L__stack_usage = 0
+  19:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     RELAY_DDR |= RELAY_MASK;
+ 159               	.LM1:
+ 160 0000 BA9A      		sbi 0x17,2
+  20:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     RELAY_PORT &= ~RELAY_MASK;
+ 162               	.LM2:
+ 163 0002 C298      		cbi 0x18,2
+  21:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  22:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     BUZZER_DDR |= BUZZER_MASK;
+ 165               	.LM3:
+ 166 0004 D09A      		sbi 0x1a,0
+  23:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     BUZZER_PORT &= ~BUZZER_MASK;
+ 168               	.LM4:
+ 169 0006 D898      		cbi 0x1b,0
+  24:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  25:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  26:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     /*this is specific for the attiny84*/
+  27:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR1A |= 0;                //This whole register is set to zeros,
+ 171               	.LM5:
+ 172 0008 8FB5      		in r24,0x2f
+ 173 000a 8FBD      		out 0x2f,r24
+  28:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR1B |= (1 << WGM12);     //Set this to enable CTC mode
+ 175               	.LM6:
+ 176 000c 8EB5      		in r24,0x2e
+ 177 000e 8860      		ori r24,lo8(8)
+ 178 0010 8EBD      		out 0x2e,r24
+  29:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR1B |= (1 << CS12) | (1 << CS10);        //setting the prescaler to 1024
+ 180               	.LM7:
+ 181 0012 8EB5      		in r24,0x2e
+ 182 0014 8560      		ori r24,lo8(5)
+ 183 0016 8EBD      		out 0x2e,r24
+  30:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     OCR1A = 244; //1,000,000[F_CPU] / (1024[prescaler] * 2 * (1Hz *2)
+ 185               	.LM8:
+ 186 0018 84EF      		ldi r24,lo8(-12)
+ 187 001a 90E0      		ldi r25,0
+ 188 001c 9BBD      		out 0x2a+1,r25
+ 189 001e 8ABD      		out 0x2a,r24
+  31:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** //        TIMSK1 |= (1 << OCIE1A);
+  32:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  33:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     /*This is specific for the attiny74*/
+  34:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     /*This is for the relay*/
+  35:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR0A |= (1 << WGM00);     //setting the WGM mode to mode 7, Phase correct pwm
+ 191               	.LM9:
+ 192 0020 80B7      		in r24,0x30
+ 193 0022 8160      		ori r24,lo8(1)
+ 194 0024 80BF      		out 0x30,r24
+  36:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR0B |= (1 << WGM02);
+ 196               	.LM10:
+ 197 0026 83B7      		in r24,0x33
+ 198 0028 8860      		ori r24,lo8(8)
+ 199 002a 83BF      		out 0x33,r24
+  37:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TCCR0B |= (1 << CS00);      //setting the prescaler to 1.
+ 201               	.LM11:
+ 202 002c 83B7      		in r24,0x33
+ 203 002e 8160      		ori r24,lo8(1)
+ 204 0030 83BF      		out 0x33,r24
+ 205               	/* epilogue start */
+  38:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     //TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OC0A
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     
+  40:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** }
+ 207               	.LM12:
+ 208 0032 0895      		ret
+ 210               	.Lscope1:
+ 211               	.global	__floatsisf
+ 212               	.global	__mulsf3
+ 213               	.global	__unordsf2
+ 214               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 215               	.LC0:
+ 216 0000 5465 6D70 		.string	"Temp: "
+ 216      3A20 00
+ 217               	.LC1:
+ 218 0007 6043 2020 		.string	"`C   "
+ 218      2000 
+ 219               	.global	__fixunssfsi
+ 220               	.global	__lesf2
+ 221               	.global	__gtsf2
+ 222               		.text
+ 224               	.global	action
+ 226               	action:
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  42:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** void action(void){
+ 228               	.LM13:
+ 229               	.LFBB2:
+ 230 0034 8F92      		push r8
+ 231 0036 9F92      		push r9
+ 232 0038 AF92      		push r10
+ 233 003a BF92      		push r11
+ 234 003c FF92      		push r15
+ 235 003e 0F93      		push r16
+ 236 0040 1F93      		push r17
+ 237 0042 CF93      		push r28
+ 238 0044 DF93      		push r29
+ 239 0046 00D0      		rcall .
+ 240 0048 00D0      		rcall .
+ 241 004a CDB7      		in r28,__SP_L__
+ 242 004c DEB7      		in r29,__SP_H__
+ 243               	/* prologue: function */
+ 244               	/* frame size = 4 */
+ 245               	/* stack size = 13 */
+ 246               	.L__stack_usage = 13
+  43:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     started = true;
+ 248               	.LM14:
+ 249 004e 81E0      		ldi r24,lo8(1)
+ 250 0050 8093 0000 		sts started,r24
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     state = 1;
+ 252               	.LM15:
+ 253 0054 8093 0000 		sts state,r24
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+  46:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     TIMSK1 |= (1 << OCIE1A);
+ 255               	.LM16:
+ 256 0058 619A      		sbi 0xc,1
+ 257               	.LBB19:
+  47:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     while (state != 0) {
+  49:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         float tempTemperature = 0;
+  50:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         float previousTemp = temp;
+  51:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         analogRead();
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         tempTemperature = (adc.value * 0.29); //analogRead();
+  54:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         if (isnan(tempTemperature)){
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             temp = previousTemp;
+  57:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+  58:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         else{
+  59:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             temp = tempTemperature;
+  60:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+  61:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_clear();
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x40);
+  64:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("Temp: ");
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x46);
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         lcdPrintDouble((adc.value * 0.29));
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("`C   ");
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x4F);
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         lcdPrintNumber((int)state);
+  70:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         _delay_ms(50);
+  71:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         switch (state) {
+  73:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case OFF:
+  74:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //set relay pin low.
+  75:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 RELAY_PORT &= ~RELAY_MASK;
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR1B &= ~WGM12;
+  77:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //return;
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 
+  79:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+  80:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case Preheating:
+  81:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //pwm relay pin to 75 (0-255) profile[0]
+  82:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 // TODO: need to implement the pwm here.
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 OCR0A = ((profiles[selectedProfile].preheatPWM) * 2.55);
+  84:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+  85:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 
+  86:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if temp >= profile[1], 140
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (temp >= profiles[selectedProfile].preheatTemp) {
+  88:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if true, state = 2; and count = 0;
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Soaking;
+  90:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     count = 0;
+  91:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     TCCR0A &= ~((1 << COM0A1) | (1 << COM0A0));
+  92:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+  93:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+  94:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case Soaking:
+  95:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if avgTemp < profile[1], 140, set relayPin high,
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (temp < profiles[selectedProfile].preheatTemp) {
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+  98:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 } else {
+  99:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     // else set relayPin low
+ 100:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT &= ~RELAY_MASK;
+ 101:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 102:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if seconds >= profile[2], 45, set state to 3.
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (seconds >= profiles[selectedProfile].soakDuration) {
+ 104:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Reflowing;
+ 259               	.LM17:
+ 260 005a 13E0      		ldi r17,lo8(3)
+ 105:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 106:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+ 107:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case Reflowing:
+ 108:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //pwm relay pin to 125, (0-255) profile[3]
+ 109:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 // TODO: need to implement the pwm here. Again.
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 OCR0A = ((profiles[selectedProfile].reflowPWM) * 2.55);
+ 111:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 112:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 
+ 113:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if avgTemp >= profile[4], 205, set state = 4, count = 0
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (temp >= profiles[selectedProfile].reflowTemp) {
+ 115:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Cooling;
+ 262               	.LM18:
+ 263 005c 04E0      		ldi r16,lo8(4)
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     count = 0;
+ 265               	.LM19:
+ 266 005e 82E0      		ldi r24,lo8(2)
+ 267 0060 F82E      		mov r15,r24
+ 268               	.L3:
+ 269               	.LBE19:
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         float tempTemperature = 0;
+ 271               	.LM20:
+ 272 0062 8091 0000 		lds r24,state
+ 273 0066 8111      		cpse r24,__zero_reg__
+ 274 0068 00C0      		rjmp .L27
+ 275               	/* epilogue start */
+ 116:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     count = 0;
+ 117:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     TCCR0A &= ~((1 << COM0A1) | (1 << COM0A0));
+ 118:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 119:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+ 120:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case Cooling:
+ 121:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if avgTemp < profile[4], 205, set realayPin high.
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (temp < profiles[selectedProfile].reflowTemp) {
+ 123:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 124:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 } else {
+ 125:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if false, set relayPin low.
+ 126:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT &= ~RELAY_MASK;
+ 127:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 128:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 //check if seconds >= profile[5], 20, set state = 0, set relayPin LOW.
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 if (seconds >= profiles[selectedProfile].reflowDuration) {
+ 130:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = OFF;
+ 131:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT &= ~RELAY_MASK;
+ 132:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 133:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR1B &= ~WGM12;
+ 134:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+ 135:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             default:
+ 136:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 RELAY_PORT &= ~RELAY_MASK; //set relayPin low,
+ 137:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 state = OFF;
+ 138:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 count = 0;
+ 139:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR1B &= ~WGM12;
+ 140:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+ 141:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+ 142:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     }
+ 143:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     
+ 144:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** }
+ 277               	.LM21:
+ 278 006a 0F90      		pop __tmp_reg__
+ 279 006c 0F90      		pop __tmp_reg__
+ 280 006e 0F90      		pop __tmp_reg__
+ 281 0070 0F90      		pop __tmp_reg__
+ 282 0072 DF91      		pop r29
+ 283 0074 CF91      		pop r28
+ 284 0076 1F91      		pop r17
+ 285 0078 0F91      		pop r16
+ 286 007a FF90      		pop r15
+ 287 007c BF90      		pop r11
+ 288 007e AF90      		pop r10
+ 289 0080 9F90      		pop r9
+ 290 0082 8F90      		pop r8
+ 291 0084 0895      		ret
+ 292               	.L27:
+ 293               	.LBB24:
+  50:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+ 295               	.LM22:
+ 296 0086 8090 0000 		lds r8,temp
+ 297 008a 9090 0000 		lds r9,temp+1
+ 298 008e A090 0000 		lds r10,temp+2
+ 299 0092 B090 0000 		lds r11,temp+3
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         tempTemperature = (adc.value * 0.29); //analogRead();
+ 301               	.LM23:
+ 302 0096 00D0      		rcall analogRead
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+ 304               	.LM24:
+ 305 0098 8091 0000 		lds r24,adc
+ 306 009c 9091 0000 		lds r25,adc+1
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+ 308               	.LM25:
+ 309 00a0 9C01      		movw r18,r24
+ 310 00a2 990F      		lsl r25
+ 311 00a4 440B      		sbc r20,r20
+ 312 00a6 550B      		sbc r21,r21
+ 313 00a8 2983      		std Y+1,r18
+ 314 00aa 3A83      		std Y+2,r19
+ 315 00ac 4B83      		std Y+3,r20
+ 316 00ae 5C83      		std Y+4,r21
+ 317 00b0 CA01      		movw r24,r20
+ 318 00b2 B901      		movw r22,r18
+ 319 00b4 00D0      		rcall __floatsisf
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         
+ 321               	.LM26:
+ 322 00b6 21EE      		ldi r18,lo8(-31)
+ 323 00b8 3AE7      		ldi r19,lo8(122)
+ 324 00ba 44E9      		ldi r20,lo8(-108)
+ 325 00bc 5EE3      		ldi r21,lo8(62)
+ 326 00be 6983      		std Y+1,r22
+ 327 00c0 7A83      		std Y+2,r23
+ 328 00c2 8B83      		std Y+3,r24
+ 329 00c4 9C83      		std Y+4,r25
+ 330 00c6 6981      		ldd r22,Y+1
+ 331 00c8 7A81      		ldd r23,Y+2
+ 332 00ca 8B81      		ldd r24,Y+3
+ 333 00cc 9C81      		ldd r25,Y+4
+ 334 00ce 00D0      		rcall __mulsf3
+ 335 00d0 462F      		mov r20,r22
+ 336 00d2 572F      		mov r21,r23
+ 337 00d4 BC01      		movw r22,r24
+ 338 00d6 4983      		std Y+1,r20
+ 339 00d8 5A83      		std Y+2,r21
+ 340 00da 6B83      		std Y+3,r22
+ 341 00dc 7C83      		std Y+4,r23
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             temp = previousTemp;
+ 343               	.LM27:
+ 344 00de 9A01      		movw r18,r20
+ 345 00e0 AC01      		movw r20,r24
+ 346 00e2 B901      		movw r22,r18
+ 347 00e4 00D0      		rcall __unordsf2
+ 348 00e6 8823      		tst r24
+ 349 00e8 01F4      		brne .+2
+ 350 00ea 00C0      		rjmp .L34
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+ 352               	.LM28:
+ 353 00ec 8092 0000 		sts temp,r8
+ 354 00f0 9092 0000 		sts temp+1,r9
+ 355 00f4 A092 0000 		sts temp+2,r10
+ 356 00f8 B092 0000 		sts temp+3,r11
+ 357               	.L6:
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x40);
+ 359               	.LM29:
+ 360 00fc 00D0      		rcall LCD_clear
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("Temp: ");
+ 362               	.LM30:
+ 363 00fe 80E4      		ldi r24,lo8(64)
+ 364 0100 00D0      		rcall LCD_changeAddress
+  64:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x46);
+ 366               	.LM31:
+ 367 0102 80E0      		ldi r24,lo8(.LC0)
+ 368 0104 90E0      		ldi r25,hi8(.LC0)
+ 369 0106 00D0      		rcall LCD_sendString
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         lcdPrintDouble((adc.value * 0.29));
+ 371               	.LM32:
+ 372 0108 86E4      		ldi r24,lo8(70)
+ 373 010a 00D0      		rcall LCD_changeAddress
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("`C   ");
+ 375               	.LM33:
+ 376 010c 8091 0000 		lds r24,adc
+ 377 0110 9091 0000 		lds r25,adc+1
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("`C   ");
+ 379               	.LM34:
+ 380 0114 9C01      		movw r18,r24
+ 381 0116 990F      		lsl r25
+ 382 0118 440B      		sbc r20,r20
+ 383 011a 550B      		sbc r21,r21
+ 384 011c 2983      		std Y+1,r18
+ 385 011e 3A83      		std Y+2,r19
+ 386 0120 4B83      		std Y+3,r20
+ 387 0122 5C83      		std Y+4,r21
+ 388 0124 CA01      		movw r24,r20
+ 389 0126 B901      		movw r22,r18
+ 390 0128 00D0      		rcall __floatsisf
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("`C   ");
+ 392               	.LM35:
+ 393 012a 21EE      		ldi r18,lo8(-31)
+ 394 012c 3AE7      		ldi r19,lo8(122)
+ 395 012e 44E9      		ldi r20,lo8(-108)
+ 396 0130 5EE3      		ldi r21,lo8(62)
+ 397 0132 6983      		std Y+1,r22
+ 398 0134 7A83      		std Y+2,r23
+ 399 0136 8B83      		std Y+3,r24
+ 400 0138 9C83      		std Y+4,r25
+ 401 013a 6981      		ldd r22,Y+1
+ 402 013c 7A81      		ldd r23,Y+2
+ 403 013e 8B81      		ldd r24,Y+3
+ 404 0140 9C81      		ldd r25,Y+4
+ 405 0142 00D0      		rcall __mulsf3
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_sendString("`C   ");
+ 407               	.LM36:
+ 408 0144 6983      		std Y+1,r22
+ 409 0146 7A83      		std Y+2,r23
+ 410 0148 8B83      		std Y+3,r24
+ 411 014a 9C83      		std Y+4,r25
+ 412 014c 6981      		ldd r22,Y+1
+ 413 014e 7A81      		ldd r23,Y+2
+ 414 0150 8B81      		ldd r24,Y+3
+ 415 0152 9C81      		ldd r25,Y+4
+ 416 0154 00D0      		rcall lcdPrintDouble
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         LCD_changeAddress(0x4F);
+ 418               	.LM37:
+ 419 0156 80E0      		ldi r24,lo8(.LC1)
+ 420 0158 90E0      		ldi r25,hi8(.LC1)
+ 421 015a 00D0      		rcall LCD_sendString
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         lcdPrintNumber((int)state);
+ 423               	.LM38:
+ 424 015c 8FE4      		ldi r24,lo8(79)
+ 425 015e 00D0      		rcall LCD_changeAddress
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         _delay_ms(50);
+ 427               	.LM39:
+ 428 0160 8091 0000 		lds r24,state
+ 429 0164 90E0      		ldi r25,0
+ 430 0166 00D0      		rcall lcdPrintNumber
+ 431               	.LBB20:
+ 432               	.LBB21:
+ 433               	.LBB22:
+ 434               	.LBB23:
+ 436               	.Ltext1:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    All rights reserved.
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      distribution.
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* $Id: delay_basic.h 2453 2014-10-19 08:18:11Z saaadhu $ */
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_1(uint8_t __count) __attribute__((__always_inline__));
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_2(uint16_t __count) __attribute__((__always_inline__));
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #endif
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \file */
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \code
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \endcode
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     to the overall delay time.
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     register.
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     can be achieved.
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	);
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** }
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     counter register pair.
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****  */
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 438               	.LM40:
+ 439 0168 84ED      		ldi r24,lo8(-44)
+ 440 016a 90E3      		ldi r25,lo8(48)
+ 441               	/* #APP */
+ 442               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 443 016c 0197      		1: sbiw r24,1
+ 444 016e 01F4      		brne 1b
+ 445               	 ;  0 "" 2
+ 446               	/* #NOAPP */
+ 447               	.LBE23:
+ 448               	.LBE22:
+ 449               	.LBE21:
+ 450               	.LBE20:
+ 452               	.Ltext2:
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case OFF:
+ 454               	.LM41:
+ 455 0170 8091 0000 		lds r24,state
+ 456 0174 8230      		cpi r24,lo8(2)
+ 457 0176 01F4      		brne .+2
+ 458 0178 00C0      		rjmp .L7
+ 459 017a 00F4      		brsh .L8
+ 460 017c 8111      		cpse r24,__zero_reg__
+ 461 017e 00C0      		rjmp .L35
+ 462               	.L41:
+ 131:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 464               	.LM42:
+ 465 0180 C298      		cbi 0x18,2
+ 466               	.L39:
+ 139:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 break;
+ 468               	.LM43:
+ 469 0182 8EB5      		in r24,0x2e
+ 470 0184 8C7F      		andi r24,lo8(-4)
+ 471 0186 8EBD      		out 0x2e,r24
+ 140:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+ 473               	.LM44:
+ 474 0188 00C0      		rjmp .L3
+ 475               	.L34:
+  59:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****         }
+ 477               	.LM45:
+ 478 018a 8981      		ldd r24,Y+1
+ 479 018c 9A81      		ldd r25,Y+2
+ 480 018e AB81      		ldd r26,Y+3
+ 481 0190 BC81      		ldd r27,Y+4
+ 482 0192 8093 0000 		sts temp,r24
+ 483 0196 9093 0000 		sts temp+1,r25
+ 484 019a A093 0000 		sts temp+2,r26
+ 485 019e B093 0000 		sts temp+3,r27
+ 486 01a2 00C0      		rjmp .L6
+ 487               	.L8:
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****             case OFF:
+ 489               	.LM46:
+ 490 01a4 8330      		cpi r24,lo8(3)
+ 491 01a6 01F4      		brne .+2
+ 492 01a8 00C0      		rjmp .L11
+ 493 01aa 8430      		cpi r24,lo8(4)
+ 494 01ac 01F4      		brne .+2
+ 495 01ae 00C0      		rjmp .L12
+ 136:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 state = OFF;
+ 497               	.LM47:
+ 498 01b0 C298      		cbi 0x18,2
+ 137:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 count = 0;
+ 500               	.LM48:
+ 501 01b2 1092 0000 		sts state,__zero_reg__
+ 138:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR1B &= ~WGM12;
+ 503               	.LM49:
+ 504 01b6 1092 0000 		sts count,__zero_reg__
+ 505 01ba 1092 0000 		sts count+1,__zero_reg__
+ 506 01be 1092 0000 		sts count+2,__zero_reg__
+ 507 01c2 1092 0000 		sts count+3,__zero_reg__
+ 508 01c6 00C0      		rjmp .L39
+ 509               	.L35:
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 511               	.LM50:
+ 512 01c8 8091 0000 		lds r24,selectedProfile
+ 513 01cc 90E0      		ldi r25,0
+ 514 01ce 67E1      		ldi r22,lo8(23)
+ 515 01d0 70E0      		ldi r23,0
+ 516 01d2 00D0      		rcall __mulhi3
+ 517 01d4 FC01      		movw r30,r24
+ 518 01d6 E050      		subi r30,lo8(-(profiles))
+ 519 01d8 F040      		sbci r31,hi8(-(profiles))
+ 520 01da 8189      		ldd r24,Z+17
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 522               	.LM51:
+ 523 01dc 282F      		mov r18,r24
+ 524 01de 30E0      		ldi r19,0
+ 525 01e0 50E0      		ldi r21,0
+ 526 01e2 40E0      		ldi r20,0
+ 527 01e4 2983      		std Y+1,r18
+ 528 01e6 3A83      		std Y+2,r19
+ 529 01e8 4B83      		std Y+3,r20
+ 530 01ea 5C83      		std Y+4,r21
+ 531 01ec CA01      		movw r24,r20
+ 532 01ee B901      		movw r22,r18
+ 533 01f0 00D0      		rcall __floatsisf
+ 534 01f2 23E3      		ldi r18,lo8(51)
+ 535 01f4 33E3      		ldi r19,lo8(51)
+ 536 01f6 43E2      		ldi r20,lo8(35)
+ 537 01f8 50E4      		ldi r21,lo8(64)
+ 538 01fa 6983      		std Y+1,r22
+ 539 01fc 7A83      		std Y+2,r23
+ 540 01fe 8B83      		std Y+3,r24
+ 541 0200 9C83      		std Y+4,r25
+ 542 0202 6981      		ldd r22,Y+1
+ 543 0204 7A81      		ldd r23,Y+2
+ 544 0206 8B81      		ldd r24,Y+3
+ 545 0208 9C81      		ldd r25,Y+4
+ 546 020a 00D0      		rcall __mulsf3
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 548               	.LM52:
+ 549 020c 6983      		std Y+1,r22
+ 550 020e 7A83      		std Y+2,r23
+ 551 0210 8B83      		std Y+3,r24
+ 552 0212 9C83      		std Y+4,r25
+ 553 0214 6981      		ldd r22,Y+1
+ 554 0216 7A81      		ldd r23,Y+2
+ 555 0218 8B81      		ldd r24,Y+3
+ 556 021a 9C81      		ldd r25,Y+4
+ 557 021c 00D0      		rcall __fixunssfsi
+ 558 021e 66BF      		out 0x36,r22
+  84:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 
+ 560               	.LM53:
+ 561 0220 80B7      		in r24,0x30
+ 562 0222 806C      		ori r24,lo8(-64)
+ 563 0224 80BF      		out 0x30,r24
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if true, state = 2; and count = 0;
+ 565               	.LM54:
+ 566 0226 8090 0000 		lds r8,temp
+ 567 022a 9090 0000 		lds r9,temp+1
+ 568 022e A090 0000 		lds r10,temp+2
+ 569 0232 B090 0000 		lds r11,temp+3
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if true, state = 2; and count = 0;
+ 571               	.LM55:
+ 572 0236 8091 0000 		lds r24,selectedProfile
+ 573 023a 90E0      		ldi r25,0
+ 574 023c 67E1      		ldi r22,lo8(23)
+ 575 023e 70E0      		ldi r23,0
+ 576 0240 00D0      		rcall __mulhi3
+ 577 0242 FC01      		movw r30,r24
+ 578 0244 E050      		subi r30,lo8(-(profiles))
+ 579 0246 F040      		sbci r31,hi8(-(profiles))
+ 580 0248 8289      		ldd r24,Z+18
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if true, state = 2; and count = 0;
+ 582               	.LM56:
+ 583 024a 282F      		mov r18,r24
+ 584 024c 30E0      		ldi r19,0
+ 585 024e 50E0      		ldi r21,0
+ 586 0250 40E0      		ldi r20,0
+ 587 0252 2983      		std Y+1,r18
+ 588 0254 3A83      		std Y+2,r19
+ 589 0256 4B83      		std Y+3,r20
+ 590 0258 5C83      		std Y+4,r21
+ 591 025a CA01      		movw r24,r20
+ 592 025c B901      		movw r22,r18
+ 593 025e 00D0      		rcall __floatsisf
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     //if true, state = 2; and count = 0;
+ 595               	.LM57:
+ 596 0260 A501      		movw r20,r10
+ 597 0262 9401      		movw r18,r8
+ 598 0264 6983      		std Y+1,r22
+ 599 0266 7A83      		std Y+2,r23
+ 600 0268 8B83      		std Y+3,r24
+ 601 026a 9C83      		std Y+4,r25
+ 602 026c 6981      		ldd r22,Y+1
+ 603 026e 7A81      		ldd r23,Y+2
+ 604 0270 8B81      		ldd r24,Y+3
+ 605 0272 9C81      		ldd r25,Y+4
+ 606 0274 00D0      		rcall __lesf2
+ 607 0276 1816      		cp __zero_reg__,r24
+ 608 0278 04F4      		brge .+2
+ 609 027a 00C0      		rjmp .L3
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     count = 0;
+ 611               	.LM58:
+ 612 027c F092 0000 		sts state,r15
+ 613               	.L40:
+ 116:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     TCCR0A &= ~((1 << COM0A1) | (1 << COM0A0));
+ 615               	.LM59:
+ 616 0280 1092 0000 		sts count,__zero_reg__
+ 617 0284 1092 0000 		sts count+1,__zero_reg__
+ 618 0288 1092 0000 		sts count+2,__zero_reg__
+ 619 028c 1092 0000 		sts count+3,__zero_reg__
+ 117:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 621               	.LM60:
+ 622 0290 80B7      		in r24,0x30
+ 623 0292 8F73      		andi r24,lo8(63)
+ 624 0294 80BF      		out 0x30,r24
+ 625 0296 00C0      		rjmp .L3
+ 626               	.L7:
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 628               	.LM61:
+ 629 0298 8090 0000 		lds r8,temp
+ 630 029c 9090 0000 		lds r9,temp+1
+ 631 02a0 A090 0000 		lds r10,temp+2
+ 632 02a4 B090 0000 		lds r11,temp+3
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 634               	.LM62:
+ 635 02a8 8091 0000 		lds r24,selectedProfile
+ 636 02ac 90E0      		ldi r25,0
+ 637 02ae 67E1      		ldi r22,lo8(23)
+ 638 02b0 70E0      		ldi r23,0
+ 639 02b2 00D0      		rcall __mulhi3
+ 640 02b4 FC01      		movw r30,r24
+ 641 02b6 E050      		subi r30,lo8(-(profiles))
+ 642 02b8 F040      		sbci r31,hi8(-(profiles))
+ 643 02ba 8289      		ldd r24,Z+18
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 645               	.LM63:
+ 646 02bc 282F      		mov r18,r24
+ 647 02be 30E0      		ldi r19,0
+ 648 02c0 50E0      		ldi r21,0
+ 649 02c2 40E0      		ldi r20,0
+ 650 02c4 2983      		std Y+1,r18
+ 651 02c6 3A83      		std Y+2,r19
+ 652 02c8 4B83      		std Y+3,r20
+ 653 02ca 5C83      		std Y+4,r21
+ 654 02cc CA01      		movw r24,r20
+ 655 02ce B901      		movw r22,r18
+ 656 02d0 00D0      		rcall __floatsisf
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 658               	.LM64:
+ 659 02d2 A501      		movw r20,r10
+ 660 02d4 9401      		movw r18,r8
+ 661 02d6 6983      		std Y+1,r22
+ 662 02d8 7A83      		std Y+2,r23
+ 663 02da 8B83      		std Y+3,r24
+ 664 02dc 9C83      		std Y+4,r25
+ 665 02de 6981      		ldd r22,Y+1
+ 666 02e0 7A81      		ldd r23,Y+2
+ 667 02e2 8B81      		ldd r24,Y+3
+ 668 02e4 9C81      		ldd r25,Y+4
+ 669 02e6 00D0      		rcall __gtsf2
+ 670 02e8 1816      		cp __zero_reg__,r24
+ 671 02ea 04F4      		brge .L37
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 } else {
+ 673               	.LM65:
+ 674 02ec C29A      		sbi 0x18,2
+ 675               	.L18:
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Reflowing;
+ 677               	.LM66:
+ 678 02ee 8090 0000 		lds r8,seconds
+ 679 02f2 9090 0000 		lds r9,seconds+1
+ 680 02f6 A090 0000 		lds r10,seconds+2
+ 681 02fa B090 0000 		lds r11,seconds+3
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Reflowing;
+ 683               	.LM67:
+ 684 02fe 8091 0000 		lds r24,selectedProfile
+ 685 0302 90E0      		ldi r25,0
+ 686 0304 67E1      		ldi r22,lo8(23)
+ 687 0306 70E0      		ldi r23,0
+ 688 0308 00D0      		rcall __mulhi3
+ 689 030a FC01      		movw r30,r24
+ 690 030c E050      		subi r30,lo8(-(profiles))
+ 691 030e F040      		sbci r31,hi8(-(profiles))
+ 692 0310 8389      		ldd r24,Z+19
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Reflowing;
+ 694               	.LM68:
+ 695 0312 282F      		mov r18,r24
+ 696 0314 30E0      		ldi r19,0
+ 697 0316 50E0      		ldi r21,0
+ 698 0318 40E0      		ldi r20,0
+ 699 031a 2983      		std Y+1,r18
+ 700 031c 3A83      		std Y+2,r19
+ 701 031e 4B83      		std Y+3,r20
+ 702 0320 5C83      		std Y+4,r21
+ 703 0322 CA01      		movw r24,r20
+ 704 0324 B901      		movw r22,r18
+ 705 0326 00D0      		rcall __floatsisf
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Reflowing;
+ 707               	.LM69:
+ 708 0328 A501      		movw r20,r10
+ 709 032a 9401      		movw r18,r8
+ 710 032c 6983      		std Y+1,r22
+ 711 032e 7A83      		std Y+2,r23
+ 712 0330 8B83      		std Y+3,r24
+ 713 0332 9C83      		std Y+4,r25
+ 714 0334 6981      		ldd r22,Y+1
+ 715 0336 7A81      		ldd r23,Y+2
+ 716 0338 8B81      		ldd r24,Y+3
+ 717 033a 9C81      		ldd r25,Y+4
+ 718 033c 00D0      		rcall __lesf2
+ 719 033e 1816      		cp __zero_reg__,r24
+ 720 0340 04F4      		brge .+2
+ 721 0342 00C0      		rjmp .L3
+ 104:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 723               	.LM70:
+ 724 0344 1093 0000 		sts state,r17
+ 725 0348 00C0      		rjmp .L3
+ 726               	.L37:
+ 100:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 728               	.LM71:
+ 729 034a C298      		cbi 0x18,2
+ 730 034c 00C0      		rjmp .L18
+ 731               	.L11:
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 733               	.LM72:
+ 734 034e 8091 0000 		lds r24,selectedProfile
+ 735 0352 90E0      		ldi r25,0
+ 736 0354 67E1      		ldi r22,lo8(23)
+ 737 0356 70E0      		ldi r23,0
+ 738 0358 00D0      		rcall __mulhi3
+ 739 035a FC01      		movw r30,r24
+ 740 035c E050      		subi r30,lo8(-(profiles))
+ 741 035e F040      		sbci r31,hi8(-(profiles))
+ 742 0360 8489      		ldd r24,Z+20
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 744               	.LM73:
+ 745 0362 282F      		mov r18,r24
+ 746 0364 30E0      		ldi r19,0
+ 747 0366 50E0      		ldi r21,0
+ 748 0368 40E0      		ldi r20,0
+ 749 036a 2983      		std Y+1,r18
+ 750 036c 3A83      		std Y+2,r19
+ 751 036e 4B83      		std Y+3,r20
+ 752 0370 5C83      		std Y+4,r21
+ 753 0372 CA01      		movw r24,r20
+ 754 0374 B901      		movw r22,r18
+ 755 0376 00D0      		rcall __floatsisf
+ 756 0378 23E3      		ldi r18,lo8(51)
+ 757 037a 33E3      		ldi r19,lo8(51)
+ 758 037c 43E2      		ldi r20,lo8(35)
+ 759 037e 50E4      		ldi r21,lo8(64)
+ 760 0380 6983      		std Y+1,r22
+ 761 0382 7A83      		std Y+2,r23
+ 762 0384 8B83      		std Y+3,r24
+ 763 0386 9C83      		std Y+4,r25
+ 764 0388 6981      		ldd r22,Y+1
+ 765 038a 7A81      		ldd r23,Y+2
+ 766 038c 8B81      		ldd r24,Y+3
+ 767 038e 9C81      		ldd r25,Y+4
+ 768 0390 00D0      		rcall __mulsf3
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 TCCR0A |= (1 << COM0A1) | (1 << COM0A0);    //enable toggle on pin OCR0A
+ 770               	.LM74:
+ 771 0392 6983      		std Y+1,r22
+ 772 0394 7A83      		std Y+2,r23
+ 773 0396 8B83      		std Y+3,r24
+ 774 0398 9C83      		std Y+4,r25
+ 775 039a 6981      		ldd r22,Y+1
+ 776 039c 7A81      		ldd r23,Y+2
+ 777 039e 8B81      		ldd r24,Y+3
+ 778 03a0 9C81      		ldd r25,Y+4
+ 779 03a2 00D0      		rcall __fixunssfsi
+ 780 03a4 66BF      		out 0x36,r22
+ 111:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 
+ 782               	.LM75:
+ 783 03a6 80B7      		in r24,0x30
+ 784 03a8 806C      		ori r24,lo8(-64)
+ 785 03aa 80BF      		out 0x30,r24
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Cooling;
+ 787               	.LM76:
+ 788 03ac 8090 0000 		lds r8,temp
+ 789 03b0 9090 0000 		lds r9,temp+1
+ 790 03b4 A090 0000 		lds r10,temp+2
+ 791 03b8 B090 0000 		lds r11,temp+3
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Cooling;
+ 793               	.LM77:
+ 794 03bc 8091 0000 		lds r24,selectedProfile
+ 795 03c0 90E0      		ldi r25,0
+ 796 03c2 67E1      		ldi r22,lo8(23)
+ 797 03c4 70E0      		ldi r23,0
+ 798 03c6 00D0      		rcall __mulhi3
+ 799 03c8 FC01      		movw r30,r24
+ 800 03ca E050      		subi r30,lo8(-(profiles))
+ 801 03cc F040      		sbci r31,hi8(-(profiles))
+ 802 03ce 8589      		ldd r24,Z+21
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Cooling;
+ 804               	.LM78:
+ 805 03d0 282F      		mov r18,r24
+ 806 03d2 30E0      		ldi r19,0
+ 807 03d4 50E0      		ldi r21,0
+ 808 03d6 40E0      		ldi r20,0
+ 809 03d8 2983      		std Y+1,r18
+ 810 03da 3A83      		std Y+2,r19
+ 811 03dc 4B83      		std Y+3,r20
+ 812 03de 5C83      		std Y+4,r21
+ 813 03e0 CA01      		movw r24,r20
+ 814 03e2 B901      		movw r22,r18
+ 815 03e4 00D0      		rcall __floatsisf
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = Cooling;
+ 817               	.LM79:
+ 818 03e6 A501      		movw r20,r10
+ 819 03e8 9401      		movw r18,r8
+ 820 03ea 6983      		std Y+1,r22
+ 821 03ec 7A83      		std Y+2,r23
+ 822 03ee 8B83      		std Y+3,r24
+ 823 03f0 9C83      		std Y+4,r25
+ 824 03f2 6981      		ldd r22,Y+1
+ 825 03f4 7A81      		ldd r23,Y+2
+ 826 03f6 8B81      		ldd r24,Y+3
+ 827 03f8 9C81      		ldd r25,Y+4
+ 828 03fa 00D0      		rcall __lesf2
+ 829 03fc 1816      		cp __zero_reg__,r24
+ 830 03fe 04F4      		brge .+2
+ 831 0400 00C0      		rjmp .L3
+ 115:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     count = 0;
+ 833               	.LM80:
+ 834 0402 0093 0000 		sts state,r16
+ 835 0406 00C0      		rjmp .L40
+ 836               	.L12:
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 838               	.LM81:
+ 839 0408 8090 0000 		lds r8,temp
+ 840 040c 9090 0000 		lds r9,temp+1
+ 841 0410 A090 0000 		lds r10,temp+2
+ 842 0414 B090 0000 		lds r11,temp+3
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 844               	.LM82:
+ 845 0418 8091 0000 		lds r24,selectedProfile
+ 846 041c 90E0      		ldi r25,0
+ 847 041e 67E1      		ldi r22,lo8(23)
+ 848 0420 70E0      		ldi r23,0
+ 849 0422 00D0      		rcall __mulhi3
+ 850 0424 FC01      		movw r30,r24
+ 851 0426 E050      		subi r30,lo8(-(profiles))
+ 852 0428 F040      		sbci r31,hi8(-(profiles))
+ 853 042a 8589      		ldd r24,Z+21
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 855               	.LM83:
+ 856 042c 282F      		mov r18,r24
+ 857 042e 30E0      		ldi r19,0
+ 858 0430 50E0      		ldi r21,0
+ 859 0432 40E0      		ldi r20,0
+ 860 0434 2983      		std Y+1,r18
+ 861 0436 3A83      		std Y+2,r19
+ 862 0438 4B83      		std Y+3,r20
+ 863 043a 5C83      		std Y+4,r21
+ 864 043c CA01      		movw r24,r20
+ 865 043e B901      		movw r22,r18
+ 866 0440 00D0      		rcall __floatsisf
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT |= RELAY_MASK;
+ 868               	.LM84:
+ 869 0442 A501      		movw r20,r10
+ 870 0444 9401      		movw r18,r8
+ 871 0446 6983      		std Y+1,r22
+ 872 0448 7A83      		std Y+2,r23
+ 873 044a 8B83      		std Y+3,r24
+ 874 044c 9C83      		std Y+4,r25
+ 875 044e 6981      		ldd r22,Y+1
+ 876 0450 7A81      		ldd r23,Y+2
+ 877 0452 8B81      		ldd r24,Y+3
+ 878 0454 9C81      		ldd r25,Y+4
+ 879 0456 00D0      		rcall __gtsf2
+ 880 0458 1816      		cp __zero_reg__,r24
+ 881 045a 04F4      		brge .L38
+ 123:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 } else {
+ 883               	.LM85:
+ 884 045c C29A      		sbi 0x18,2
+ 885               	.L24:
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = OFF;
+ 887               	.LM86:
+ 888 045e 8090 0000 		lds r8,seconds
+ 889 0462 9090 0000 		lds r9,seconds+1
+ 890 0466 A090 0000 		lds r10,seconds+2
+ 891 046a B090 0000 		lds r11,seconds+3
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = OFF;
+ 893               	.LM87:
+ 894 046e 8091 0000 		lds r24,selectedProfile
+ 895 0472 90E0      		ldi r25,0
+ 896 0474 67E1      		ldi r22,lo8(23)
+ 897 0476 70E0      		ldi r23,0
+ 898 0478 00D0      		rcall __mulhi3
+ 899 047a FC01      		movw r30,r24
+ 900 047c E050      		subi r30,lo8(-(profiles))
+ 901 047e F040      		sbci r31,hi8(-(profiles))
+ 902 0480 8689      		ldd r24,Z+22
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = OFF;
+ 904               	.LM88:
+ 905 0482 282F      		mov r18,r24
+ 906 0484 30E0      		ldi r19,0
+ 907 0486 50E0      		ldi r21,0
+ 908 0488 40E0      		ldi r20,0
+ 909 048a 2983      		std Y+1,r18
+ 910 048c 3A83      		std Y+2,r19
+ 911 048e 4B83      		std Y+3,r20
+ 912 0490 5C83      		std Y+4,r21
+ 913 0492 CA01      		movw r24,r20
+ 914 0494 B901      		movw r22,r18
+ 915 0496 00D0      		rcall __floatsisf
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     state = OFF;
+ 917               	.LM89:
+ 918 0498 A501      		movw r20,r10
+ 919 049a 9401      		movw r18,r8
+ 920 049c 6983      		std Y+1,r22
+ 921 049e 7A83      		std Y+2,r23
+ 922 04a0 8B83      		std Y+3,r24
+ 923 04a2 9C83      		std Y+4,r25
+ 924 04a4 6981      		ldd r22,Y+1
+ 925 04a6 7A81      		ldd r23,Y+2
+ 926 04a8 8B81      		ldd r24,Y+3
+ 927 04aa 9C81      		ldd r25,Y+4
+ 928 04ac 00D0      		rcall __lesf2
+ 929 04ae 1816      		cp __zero_reg__,r24
+ 930 04b0 04F4      		brge .+2
+ 931 04b2 00C0      		rjmp .L39
+ 130:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                     RELAY_PORT &= ~RELAY_MASK;
+ 933               	.LM90:
+ 934 04b4 1092 0000 		sts state,__zero_reg__
+ 935 04b8 00C0      		rjmp .L41
+ 936               	.L38:
+ 126:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****                 }
+ 938               	.LM91:
+ 939 04ba C298      		cbi 0x18,2
+ 940 04bc 00C0      		rjmp .L24
+ 941               	.LBE24:
+ 949               	.Lscope2:
+ 951               	.global	beep
+ 953               	beep:
+ 145:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+ 146:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** void beep(void){
+ 955               	.LM92:
+ 956               	.LFBB3:
+ 957               	/* prologue: function */
+ 958               	/* frame size = 0 */
+ 959               	/* stack size = 0 */
+ 960               	.L__stack_usage = 0
+ 147:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     BUZZER_PORT |= BUZZER_MASK;
+ 962               	.LM93:
+ 963 04be D89A      		sbi 0x1b,0
+ 964 04c0 88EB      		ldi r24,lo8(-72)
+ 965 04c2 9BE0      		ldi r25,lo8(11)
+ 966               	.LBB25:
+ 967               	.LBB26:
+ 968               	.LBB27:
+ 969               	.LBB28:
+ 971               	.Ltext3:
+ 973               	.LM94:
+ 974 04c4 29E1      		ldi r18,lo8(25)
+ 975 04c6 30E0      		ldi r19,0
+ 976               	.L43:
+ 977 04c8 F901      		movw r30,r18
+ 978               	/* #APP */
+ 979               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 980 04ca 3197      		1: sbiw r30,1
+ 981 04cc 01F4      		brne 1b
+ 982               	 ;  0 "" 2
+ 983               	/* #NOAPP */
+ 984 04ce 0197      		sbiw r24,1
+ 985               	.LBE28:
+ 986               	.LBE27:
+ 988               	.Ltext4:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    All rights reserved.
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      distribution.
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* $Id: delay.h.in 2506 2016-02-08 10:05:45Z joerg_wunsch $ */
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef __DOXYGEN__
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  ifndef __HAS_DELAY_CYCLES
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #    define __HAS_DELAY_CYCLES 1
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  endif
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif  /* __DOXYGEN__ */
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <inttypes.h>
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <math.h>
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \file */
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \code
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     #include <util/delay.h>
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \endcode
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     used.
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     routines linked into the application.
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** */
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef F_CPU
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \ingroup util_delay
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \def F_CPU
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \brief CPU frequency in Hz
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The macro F_CPU specifies the CPU frequency to be considered by
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     the delay macros.  This macro is normally supplied by the
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     environment (e.g. from within a project header, or the project's
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     Makefile).  The value 1 MHz here is only provided as a "vanilla"
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     fallback if no such user-provided definition could be found.
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     In terms of the delay functions, the CPU frequency can be given as
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     a floating-point constant (e.g. 3.6864E6 for 3.6864 MHz).
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     However, the macros in <util/setbaud.h> require it to be an
+ 106:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     integer value.
+ 107:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****  */
+ 108:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # define F_CPU 1000000UL
+ 109:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 110:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 111:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+ 112:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+ 113:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 114:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 115:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 116:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 117:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 118:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  include <math.h>
+ 119:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 120:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 121:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /**
+ 122:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \ingroup util_delay
+ 123:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 124:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 125:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 126:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 127:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 128:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 129:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 130:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 131:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 132:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 133:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 134:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 135:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 136:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 137:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles()
+ 138:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 139:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 140:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 141:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 142:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Conversion of \c __ms into clock cycles may not always result in
+ 143:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    integer.  By default, the clock cycles rounded up to next
+ 144:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    integer. This ensures that the user gets at least \c __ms
+ 145:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    microseconds of delay.
+ 146:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 147:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Alternatively, by defining the macro \c __DELAY_ROUND_DOWN__, or
+ 148:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \c __DELAY_ROUND_CLOSEST__, before including this header file, the
+ 149:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    algorithm can be made to round down, or round to closest integer,
+ 150:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    respectively.
+ 151:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 152:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \note
+ 153:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 154:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The implementation of _delay_ms() based on
+ 155:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    __builtin_avr_delay_cycles() is not backward compatible with older
+ 156:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    implementations.  In order to get functionality backward compatible
+ 157:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    with previous versions, the macro \c "__DELAY_BACKWARD_COMPATIBLE__"
+ 158:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    must be defined before including this header file. Also, the
+ 159:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    backward compatible algorithm will be chosen if the code is
+ 160:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    compiled in a <em>freestanding environment</em> (GCC option
+ 161:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \c -ffreestanding), as the math functions required for rounding are
+ 162:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    not available to the compiler then.
+ 163:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 164:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****  */
+ 165:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** void
+ 166:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 167:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** {
+ 168:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	double __tmp ;
+ 169:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 170:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 171:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 172:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 173:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 174:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 175:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 176:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 177:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 178:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 179:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 180:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 181:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 182:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#else
+ 183:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		//round up by default
+ 184:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 185:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#endif
+ 186:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 187:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 188:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 189:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #else
+ 190:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	uint16_t __ticks;
+ 191:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 4e3) * __ms;
+ 192:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	if (__tmp < 1.0)
+ 193:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks = 1;
+ 194:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	else if (__tmp > 65535)
+ 195:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	{
+ 196:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		//	__ticks = requested delay in 1/10 ms
+ 197:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks = (uint16_t) (__ms * 10.0);
+ 198:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		while(__ticks)
+ 990               	.LM95:
+ 991 04d0 01F4      		brne .L43
+ 992               	.LBE26:
+ 993               	.LBE25:
+ 995               	.Ltext5:
+ 148:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     _delay_ms(300);
+ 149:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     BUZZER_PORT &= ~BUZZER_MASK;
+ 997               	.LM96:
+ 998 04d2 D898      		cbi 0x1b,0
+ 999               	/* epilogue start */
+ 150:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** }
+ 1001               	.LM97:
+ 1002 04d4 0895      		ret
+ 1004               	.Lscope3:
+ 1006               	.global	__vector_6
+ 1008               	__vector_6:
+ 151:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+ 152:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+ 153:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** 
+ 154:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** ISR(TIM1_COMPA_vect){
+ 1010               	.LM98:
+ 1011               	.LFBB4:
+ 1012 04d6 1F92      		push r1
+ 1013 04d8 0F92      		push r0
+ 1014 04da 0FB6      		in r0,__SREG__
+ 1015 04dc 0F92      		push r0
+ 1016 04de 1124      		clr __zero_reg__
+ 1017 04e0 2F93      		push r18
+ 1018 04e2 3F93      		push r19
+ 1019 04e4 4F93      		push r20
+ 1020 04e6 5F93      		push r21
+ 1021 04e8 6F93      		push r22
+ 1022 04ea 7F93      		push r23
+ 1023 04ec 8F93      		push r24
+ 1024 04ee 9F93      		push r25
+ 1025 04f0 AF93      		push r26
+ 1026 04f2 BF93      		push r27
+ 1027 04f4 EF93      		push r30
+ 1028 04f6 FF93      		push r31
+ 1029 04f8 CF93      		push r28
+ 1030 04fa DF93      		push r29
+ 1031 04fc 00D0      		rcall .
+ 1032 04fe 00D0      		rcall .
+ 1033 0500 CDB7      		in r28,__SP_L__
+ 1034 0502 DEB7      		in r29,__SP_H__
+ 1035               	/* prologue: Signal */
+ 1036               	/* frame size = 4 */
+ 1037               	/* stack size = 21 */
+ 1038               	.L__stack_usage = 21
+ 155:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     count ++;
+ 1040               	.LM99:
+ 1041 0504 8091 0000 		lds r24,count
+ 1042 0508 9091 0000 		lds r25,count+1
+ 1043 050c A091 0000 		lds r26,count+2
+ 1044 0510 B091 0000 		lds r27,count+3
+ 1045 0514 0196      		adiw r24,1
+ 1046 0516 A11D      		adc r26,__zero_reg__
+ 1047 0518 B11D      		adc r27,__zero_reg__
+ 1048 051a 8093 0000 		sts count,r24
+ 1049 051e 9093 0000 		sts count+1,r25
+ 1050 0522 A093 0000 		sts count+2,r26
+ 1051 0526 B093 0000 		sts count+3,r27
+ 156:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c ****     seconds = (float)count / 4;
+ 1053               	.LM100:
+ 1054 052a 8091 0000 		lds r24,count
+ 1055 052e 9091 0000 		lds r25,count+1
+ 1056 0532 A091 0000 		lds r26,count+2
+ 1057 0536 B091 0000 		lds r27,count+3
+ 1058 053a 8983      		std Y+1,r24
+ 1059 053c 9A83      		std Y+2,r25
+ 1060 053e AB83      		std Y+3,r26
+ 1061 0540 BC83      		std Y+4,r27
+ 1062 0542 BC01      		movw r22,r24
+ 1063 0544 CD01      		movw r24,r26
+ 1064 0546 00D0      		rcall __floatsisf
+ 1066               	.LM101:
+ 1067 0548 20E0      		ldi r18,0
+ 1068 054a 30E0      		ldi r19,0
+ 1069 054c 40E8      		ldi r20,lo8(-128)
+ 1070 054e 5EE3      		ldi r21,lo8(62)
+ 1071 0550 6983      		std Y+1,r22
+ 1072 0552 7A83      		std Y+2,r23
+ 1073 0554 8B83      		std Y+3,r24
+ 1074 0556 9C83      		std Y+4,r25
+ 1075 0558 6981      		ldd r22,Y+1
+ 1076 055a 7A81      		ldd r23,Y+2
+ 1077 055c 8B81      		ldd r24,Y+3
+ 1078 055e 9C81      		ldd r25,Y+4
+ 1079 0560 00D0      		rcall __mulsf3
+ 1080 0562 462F      		mov r20,r22
+ 1081 0564 572F      		mov r21,r23
+ 1082 0566 BC01      		movw r22,r24
+ 1084               	.LM102:
+ 1085 0568 4093 0000 		sts seconds,r20
+ 1086 056c 5093 0000 		sts seconds+1,r21
+ 1087 0570 6093 0000 		sts seconds+2,r22
+ 1088 0574 7093 0000 		sts seconds+3,r23
+ 1089               	/* epilogue start */
+ 157:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/heater.c **** }
+ 1091               	.LM103:
+ 1092 0578 0F90      		pop __tmp_reg__
+ 1093 057a 0F90      		pop __tmp_reg__
+ 1094 057c 0F90      		pop __tmp_reg__
+ 1095 057e 0F90      		pop __tmp_reg__
+ 1096 0580 DF91      		pop r29
+ 1097 0582 CF91      		pop r28
+ 1098 0584 FF91      		pop r31
+ 1099 0586 EF91      		pop r30
+ 1100 0588 BF91      		pop r27
+ 1101 058a AF91      		pop r26
+ 1102 058c 9F91      		pop r25
+ 1103 058e 8F91      		pop r24
+ 1104 0590 7F91      		pop r23
+ 1105 0592 6F91      		pop r22
+ 1106 0594 5F91      		pop r21
+ 1107 0596 4F91      		pop r20
+ 1108 0598 3F91      		pop r19
+ 1109 059a 2F91      		pop r18
+ 1110 059c 0F90      		pop r0
+ 1111 059e 0FBE      		out __SREG__,r0
+ 1112 05a0 0F90      		pop r0
+ 1113 05a2 1F90      		pop r1
+ 1114 05a4 1895      		reti
+ 1116               	.Lscope4:
+ 1117               	.global	state
+ 1118               		.section .bss
+ 1121               	state:
+ 1122 0000 00        		.zero	1
+ 1124               	.global	temp
+ 1127               	temp:
+ 1128 0001 0000 0000 		.zero	4
+ 1130               	.global	lcdCount
+ 1133               	lcdCount:
+ 1134 0005 0000      		.zero	2
+ 1136               	.global	count
+ 1139               	count:
+ 1140 0007 0000 0000 		.zero	4
+ 1142               	.global	seconds
+ 1145               	seconds:
+ 1146 000b 0000 0000 		.zero	4
+ 1148               		.comm	relay_state,2,1
+ 1150               		.comm	summation,4,1
+ 1152               		.comm	targetTemperature,2,1
+ 1154               		.comm	adc,2,1
+ 1156               		.comm	profiles,92,1
+ 1158               		.comm	isInitialChoiceState,1,1
+ 1160               		.comm	isInitialState,1,1
+ 1162               		.comm	profileSelected,1,1
+ 1164               		.comm	selectedProfile,1,1
+ 1166               		.comm	input,1,1
+ 1168               		.comm	stopped,1,1
+ 1170               		.comm	started,1,1
+ 1172               		.text
+ 1174               	.Letext0:
+ 1175               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 1176               	.global __do_copy_data
+ 1177               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 heater.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:150    .text:0000000000000000 initHeater
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:226    .text:0000000000000034 action
+                            *COM*:0000000000000001 started
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1121   .bss:0000000000000000 state
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1127   .bss:0000000000000001 temp
+                            *COM*:0000000000000002 adc
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1139   .bss:0000000000000007 count
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:000000000000005c profiles
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1145   .bss:000000000000000b seconds
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:953    .text:00000000000004be beep
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1008   .text:00000000000004d6 __vector_6
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccfB1lGv.s:1133   .bss:0000000000000005 lcdCount
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:0000000000000001 isInitialChoiceState
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 stopped
+
+UNDEFINED SYMBOLS
+__floatsisf
+__mulsf3
+__unordsf2
+__fixunssfsi
+__lesf2
+__gtsf2
+analogRead
+LCD_clear
+LCD_changeAddress
+LCD_sendString
+lcdPrintDouble
+lcdPrintNumber
+__mulhi3
+__do_copy_data
+__do_clear_bss

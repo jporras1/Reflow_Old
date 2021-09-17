@@ -1,0 +1,1081 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 148               	.global	initIO
+ 150               	initIO:
+   1:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** #include "machine.h"
+   2:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+   3:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** #define SELECT          (SELECT_BUTTON_PIN & SELECT_BUTTON_MASK)
+   4:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** #define NEXT            (NEXT_BUTTON_PIN & NEXT_BUTTON_MASK)
+   5:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** #define CHOICES_COUNT   4
+   6:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+   7:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** Profile profiles[4] = {
+   8:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     {"Ol' fashioned :)", 75,140,45,125,205,20},
+   9:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     {"    Profile 2   ", 75,140,45,125,205,20},
+  10:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     {"    Profile 3   ", 75,140,45,125,205,20},
+  11:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     {"    Profile 4   ", 75,140,45,125,205,20}
+  12:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** };
+  13:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  14:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** void initIO(void) {
+ 152               	.LM0:
+ 153               	.LFBB1:
+ 154               	/* prologue: function */
+ 155               	/* frame size = 0 */
+ 156               	/* stack size = 0 */
+ 157               	.L__stack_usage = 0
+  15:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         SELECT_BUTTON_DDR &= ~SELECT_BUTTON_MASK;
+ 159               	.LM1:
+ 160 0000 B998      		cbi 0x17,1
+  16:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         SELECT_BUTTON_PORT |= SELECT_BUTTON_MASK;
+ 162               	.LM2:
+ 163 0002 C19A      		sbi 0x18,1
+  17:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     
+  18:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         NEXT_BUTTON_DDR &= ~NEXT_BUTTON_MASK;
+ 165               	.LM3:
+ 166 0004 B898      		cbi 0x17,0
+  19:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         NEXT_BUTTON_PORT |= NEXT_BUTTON_MASK;
+ 168               	.LM4:
+ 169 0006 C09A      		sbi 0x18,0
+  20:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     
+  21:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         BUZZER_DDR |= BUZZER_MASK;
+ 171               	.LM5:
+ 172 0008 D09A      		sbi 0x1a,0
+  22:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         BUZZER_PORT &= ~BUZZER_MASK;
+ 174               	.LM6:
+ 175 000a D898      		cbi 0x1b,0
+  23:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     
+  24:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         initLCD();
+ 177               	.LM7:
+ 178 000c 00D0      		rcall initLCD
+  25:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         initHeater();
+ 180               	.LM8:
+ 181 000e 00D0      		rcall initHeater
+  26:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         SENSOR_DDR &= ~SENSOR_MASK;
+ 183               	.LM9:
+ 184 0010 D198      		cbi 0x1a,1
+  27:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         initSensor();
+ 186               	.LM10:
+ 187 0012 00C0      		rjmp initSensor
+ 189               	.Lscope1:
+ 190               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 191               	.LC0:
+ 192 0000 2020 7075 		.string	"  push to start "
+ 192      7368 2074 
+ 192      6F20 7374 
+ 192      6172 7420 
+ 192      00
+ 193               	.LC1:
+ 194 0011 2020 2020 		.string	"    Welcome     "
+ 194      5765 6C63 
+ 194      6F6D 6520 
+ 194      2020 2020 
+ 194      00
+ 195               	.LC2:
+ 196 0022 2020 2020 		.string	"     Please     "
+ 196      2050 6C65 
+ 196      6173 6520 
+ 196      2020 2020 
+ 196      00
+ 197               	.LC3:
+ 198 0033 2020 2020 		.string	"                "
+ 198      2020 2020 
+ 198      2020 2020 
+ 198      2020 2020 
+ 198      00
+ 199               	.LC4:
+ 200 0044 5365 6C65 		.string	"Select an option"
+ 200      6374 2061 
+ 200      6E20 6F70 
+ 200      7469 6F6E 
+ 200      00
+ 201               	.LC5:
+ 202 0055 2020 2020 		.string	"       was      "
+ 202      2020 2077 
+ 202      6173 2020 
+ 202      2020 2020 
+ 202      00
+ 203               	.LC6:
+ 204 0066 5365 6C65 		.string	"Selected profile"
+ 204      6374 6564 
+ 204      2070 726F 
+ 204      6669 6C65 
+ 204      00
+ 205               	.LC7:
+ 206 0077 2020 5374 		.string	"  Starting Now  "
+ 206      6172 7469 
+ 206      6E67 204E 
+ 206      6F77 2020 
+ 206      00
+ 207               	.LC8:
+ 208 0088 2020 2020 		.string	"    All Done    "
+ 208      416C 6C20 
+ 208      446F 6E65 
+ 208      2020 2020 
+ 208      00
+ 209               		.section	.text.startup,"ax",@progbits
+ 211               	.global	main
+ 213               	main:
+  28:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** }
+  29:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  30:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** int main(void) {
+ 215               	.LM11:
+ 216               	.LFBB2:
+ 217               	/* prologue: function */
+ 218               	/* frame size = 0 */
+ 219               	/* stack size = 0 */
+ 220               	.L__stack_usage = 0
+  31:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     stopped = true;
+ 222               	.LM12:
+ 223 0000 81E0      		ldi r24,lo8(1)
+ 224 0002 8093 0000 		sts stopped,r24
+  32:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     input = 0;
+ 226               	.LM13:
+ 227 0006 1092 0000 		sts input,__zero_reg__
+  33:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     selectedProfile = 0;
+ 229               	.LM14:
+ 230 000a 1092 0000 		sts selectedProfile,__zero_reg__
+  34:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     profileSelected = false;
+ 232               	.LM15:
+ 233 000e 1092 0000 		sts profileSelected,__zero_reg__
+  35:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     isInitialState = true;
+ 235               	.LM16:
+ 236 0012 8093 0000 		sts isInitialState,r24
+  36:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     isInitialChoiceState = true;
+ 238               	.LM17:
+ 239 0016 8093 0000 		sts isInitialChoiceState,r24
+  37:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  38:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     initIO();
+ 241               	.LM18:
+ 242 001a 00D0      		rcall initIO
+ 243               	.LBB66:
+ 244               	.LBB67:
+ 245               	.LBB68:
+ 246               	.LBB69:
+ 248               	.Ltext1:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Copyright (c) 2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    All rights reserved.
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    Redistribution and use in source and binary forms, with or without
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    modification, are permitted provided that the following conditions are met:
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions of source code must retain the above copyright
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer.
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      notice, this list of conditions and the following disclaimer in
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      the documentation and/or other materials provided with the
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      distribution.
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****    * Neither the name of the copyright holders nor the names of
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      contributors may be used to endorse or promote products derived
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****      from this software without specific prior written permission.
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /* $Id: delay_basic.h 2453 2014-10-19 08:18:11Z saaadhu $ */
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #ifndef _UTIL_DELAY_BASIC_H_
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #define _UTIL_DELAY_BASIC_H_ 1
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #include <inttypes.h>
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #if !defined(__DOXYGEN__)
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_1(uint8_t __count) __attribute__((__always_inline__));
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** static __inline__ void _delay_loop_2(uint16_t __count) __attribute__((__always_inline__));
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** #endif
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \file */
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \defgroup util_delay_basic <util/delay_basic.h>: Basic busy-wait delay loops
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \code
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     #include <util/delay_basic.h>
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     \endcode
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     The functions in this header file implement simple delay loops
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     that perform a busy-waiting.  They are typically used to
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     facilitate short delays in the program execution.  They are
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     implemented as count-down loops with a well-known CPU cycle
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     count per loop iteration.  As such, no other processing can
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     occur simultaneously.  It should be kept in mind that the
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     functions described here do not disable interrupts.
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     In general, for long delays, the use of hardware timers is
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     much preferrable, as they free the CPU, and allow for
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     concurrent processing of other events while the timer is
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     running.  However, in particular for very short delays, the
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     overhead of setting up a hardware timer is too much compared
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     to the overall delay time.
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Two inline functions are provided for the actual delay algorithms.
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using an 8-bit counter \c __count, so up to 256
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 256 would have to be passed
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     as 0.)  The loop executes three CPU cycles per iteration, not
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     including the overhead the compiler needs to setup the counter
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     register.
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     can be achieved.
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** */
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_1(uint8_t __count)
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: dec %0" "\n\t"
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"brne 1b"
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "=r" (__count)
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "0" (__count)
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	);
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** }
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** /** \ingroup util_delay_basic
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Delay loop using a 16-bit counter \c __count, so up to 65536
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     iterations are possible.  (The value 65536 would have to be
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     passed as 0.)  The loop executes four CPU cycles per iteration,
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     not including the overhead the compiler requires to setup the
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     counter register pair.
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****     milliseconds can be achieved.
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h ****  */
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** void
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** _delay_loop_2(uint16_t __count)
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** {
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	__asm__ volatile (
+ 250               	.LM19:
+ 251 001c 8CE7      		ldi r24,lo8(124)
+ 252 001e E82E      		mov r14,r24
+ 253 0020 82E9      		ldi r24,lo8(-110)
+ 254 0022 F82E      		mov r15,r24
+ 255               	.LBE69:
+ 256               	.LBE68:
+ 257               	.LBE67:
+ 258               	.LBE66:
+ 259               	.LBB73:
+ 260               	.LBB74:
+ 261               	.LBB75:
+ 262               	.LBB76:
+ 263 0024 C9E1      		ldi r28,lo8(25)
+ 264 0026 D0E0      		ldi r29,0
+ 265               	.LBE76:
+ 266               	.LBE75:
+ 267               	.LBE74:
+ 268               	.LBE73:
+ 270               	.Ltext2:
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     
+  40:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****     while (1) {
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         if (isInitialState){
+  42:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             LCD_clear();
+  43:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             lcdPrint("    Welcome     ", "  push to start ");
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             while (((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0) || ((NEXT_BUTTON_PIN & NEXT_BUTT
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             isInitialState = false;
+  46:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         }
+  47:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         if (stopped) {
+  49:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             if ((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0){
+  50:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+  51:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 stopped = false;
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 input = 0;
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             } else if ((NEXT_BUTTON_PIN & NEXT_BUTTON_MASK) == 0){
+  54:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 stopped = true;
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 input = 0;
+  57:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialState = true;
+  58:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("     Please     ", "  push to start ");
+  59:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             } else {
+  60:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(10);
+  61:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             }
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         } else {\
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             if (isInitialChoiceState) {
+  64:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 //Start conversion, NOT set here, set during the program execution.
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("Select an option", "                ");
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(1200);
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 LCD_changeAddress(0x40);
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 LCD_sendString(profiles[selectedProfile].name);
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialChoiceState = 0;
+  70:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             }
+  71:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             if ((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0){
+  73:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+  74:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("Selected profile", "       was      ");
+  75:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(1000);
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint(profiles[selectedProfile].name, "                ");
+  77:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(800);
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("  Starting Now  ", "                ");
+  79:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(900);
+  80:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 input = 0;
+  81:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 stopped = true;
+ 272               	.LM20:
+ 273 0028 11E0      		ldi r17,lo8(1)
+ 274               	.LBB80:
+ 275               	.LBB81:
+ 276               	.LBB82:
+ 277               	.LBB83:
+ 279               	.Ltext3:
+ 281               	.LM21:
+ 282 002a 94EC      		ldi r25,lo8(-60)
+ 283 002c C92E      		mov r12,r25
+ 284 002e 99E0      		ldi r25,lo8(9)
+ 285 0030 D92E      		mov r13,r25
+ 286               	.L3:
+ 287               	.LBE83:
+ 288               	.LBE82:
+ 289               	.LBE81:
+ 290               	.LBE80:
+ 292               	.Ltext4:
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             LCD_clear();
+ 294               	.LM22:
+ 295 0032 8091 0000 		lds r24,isInitialState
+ 296 0036 8823      		tst r24
+ 297 0038 01F0      		breq .L4
+  42:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             lcdPrint("    Welcome     ", "  push to start ");
+ 299               	.LM23:
+ 300 003a 00D0      		rcall LCD_clear
+  43:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             while (((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0) || ((NEXT_BUTTON_PIN & NEXT_BUTT
+ 302               	.LM24:
+ 303 003c 60E0      		ldi r22,lo8(.LC0)
+ 304 003e 70E0      		ldi r23,hi8(.LC0)
+ 305 0040 80E0      		ldi r24,lo8(.LC1)
+ 306 0042 90E0      		ldi r25,hi8(.LC1)
+ 307 0044 00D0      		rcall lcdPrint
+ 308               	.L5:
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             isInitialState = false;
+ 310               	.LM25:
+ 311 0046 B19B      		sbis 0x16,1
+ 312 0048 00C0      		rjmp .L5
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             isInitialState = false;
+ 314               	.LM26:
+ 315 004a B09B      		sbis 0x16,0
+ 316 004c 00C0      		rjmp .L5
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****         }
+ 318               	.LM27:
+ 319 004e 1092 0000 		sts isInitialState,__zero_reg__
+ 320               	.L4:
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             if ((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0){
+ 322               	.LM28:
+ 323 0052 8091 0000 		lds r24,stopped
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             if ((SELECT_BUTTON_PIN & SELECT_BUTTON_MASK) == 0){
+ 325               	.LM29:
+ 326 0056 8823      		tst r24
+ 327 0058 01F0      		breq .L7
+  49:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+ 329               	.LM30:
+ 330 005a B199      		sbic 0x16,1
+ 331 005c 00C0      		rjmp .L8
+ 332               	.LBB87:
+ 333               	.LBB88:
+ 334               	.LBB89:
+ 335               	.LBB90:
+ 337               	.Ltext5:
+ 339               	.LM31:
+ 340 005e C701      		movw r24,r14
+ 341               	/* #APP */
+ 342               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 343 0060 0197      		1: sbiw r24,1
+ 344 0062 01F4      		brne 1b
+ 345               	 ;  0 "" 2
+ 346               	/* #NOAPP */
+ 347               	.LBE90:
+ 348               	.LBE89:
+ 349               	.LBE88:
+ 350               	.LBE87:
+ 352               	.Ltext6:
+  51:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 input = 0;
+ 354               	.LM32:
+ 355 0064 1092 0000 		sts stopped,__zero_reg__
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             } else if ((NEXT_BUTTON_PIN & NEXT_BUTTON_MASK) == 0){
+ 357               	.LM33:
+ 358 0068 1092 0000 		sts input,__zero_reg__
+ 359 006c 00C0      		rjmp .L3
+ 360               	.L8:
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+ 362               	.LM34:
+ 363 006e B099      		sbic 0x16,0
+ 364 0070 00C0      		rjmp .L10
+ 365               	.LBB91:
+ 366               	.LBB92:
+ 367               	.LBB93:
+ 368               	.LBB94:
+ 370               	.Ltext7:
+ 372               	.LM35:
+ 373 0072 C701      		movw r24,r14
+ 374               	/* #APP */
+ 375               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 376 0074 0197      		1: sbiw r24,1
+ 377 0076 01F4      		brne 1b
+ 378               	 ;  0 "" 2
+ 379               	/* #NOAPP */
+ 380               	.LBE94:
+ 381               	.LBE93:
+ 382               	.LBE92:
+ 383               	.LBE91:
+ 385               	.Ltext8:
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 input = 0;
+ 387               	.LM36:
+ 388 0078 1093 0000 		sts stopped,r17
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialState = true;
+ 390               	.LM37:
+ 391 007c 1092 0000 		sts input,__zero_reg__
+  57:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("     Please     ", "  push to start ");
+ 393               	.LM38:
+ 394 0080 1093 0000 		sts isInitialState,r17
+  58:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             } else {
+ 396               	.LM39:
+ 397 0084 60E0      		ldi r22,lo8(.LC0)
+ 398 0086 70E0      		ldi r23,hi8(.LC0)
+ 399 0088 80E0      		ldi r24,lo8(.LC2)
+ 400 008a 90E0      		ldi r25,hi8(.LC2)
+ 401 008c 00D0      		rcall lcdPrint
+ 402 008e 00C0      		rjmp .L3
+ 403               	.L10:
+ 404               	.LBB95:
+ 405               	.LBB86:
+ 406               	.LBB85:
+ 407               	.LBB84:
+ 409               	.Ltext9:
+ 411               	.LM40:
+ 412 0090 C601      		movw r24,r12
+ 413               	/* #APP */
+ 414               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 415 0092 0197      		1: sbiw r24,1
+ 416 0094 01F4      		brne 1b
+ 417               	 ;  0 "" 2
+ 106:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 107:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"brne 1b"
+ 108:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "=w" (__count)
+ 109:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		: "0" (__count)
+ 110:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 	);
+ 111:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** }
+ 419               	.LM41:
+ 420               	/* #NOAPP */
+ 421 0096 00C0      		rjmp .L3
+ 422               	.L7:
+ 423               	.LBE84:
+ 424               	.LBE85:
+ 425               	.LBE86:
+ 426               	.LBE95:
+ 428               	.Ltext10:
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 //Start conversion, NOT set here, set during the program execution.
+ 430               	.LM42:
+ 431 0098 8091 0000 		lds r24,isInitialChoiceState
+ 432 009c 8823      		tst r24
+ 433 009e 01F0      		breq .L11
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(1200);
+ 435               	.LM43:
+ 436 00a0 60E0      		ldi r22,lo8(.LC3)
+ 437 00a2 70E0      		ldi r23,hi8(.LC3)
+ 438 00a4 80E0      		ldi r24,lo8(.LC4)
+ 439 00a6 90E0      		ldi r25,hi8(.LC4)
+ 440 00a8 00D0      		rcall lcdPrint
+ 441 00aa 80EE      		ldi r24,lo8(-32)
+ 442 00ac 9EE2      		ldi r25,lo8(46)
+ 443               	.L12:
+ 444               	.LBB96:
+ 445               	.LBB97:
+ 446               	.LBB98:
+ 447               	.LBB99:
+ 449               	.Ltext11:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 451               	.LM44:
+ 452 00ae FE01      		movw r30,r28
+ 453               	/* #APP */
+ 454               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 455 00b0 3197      		1: sbiw r30,1
+ 456 00b2 01F4      		brne 1b
+ 457               	 ;  0 "" 2
+ 458               	/* #NOAPP */
+ 459 00b4 0197      		sbiw r24,1
+ 460               	.LBE99:
+ 461               	.LBE98:
+ 463               	.Ltext12:
+   1:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    All rights reserved.
+   5:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+   6:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+   9:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  12:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      distribution.
+  16:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  17:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  21:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  33:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* $Id: delay.h.in 2506 2016-02-08 10:05:45Z joerg_wunsch $ */
+  34:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  35:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  38:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef __DOXYGEN__
+  39:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  ifndef __HAS_DELAY_CYCLES
+  40:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #    define __HAS_DELAY_CYCLES 1
+  41:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  endif
+  42:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif  /* __DOXYGEN__ */
+  43:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  44:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <inttypes.h>
+  45:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  46:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #include <math.h>
+  47:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  48:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \file */
+  49:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  50:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \code
+  51:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  52:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  53:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     #include <util/delay.h>
+  54:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \endcode
+  55:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  56:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  57:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  58:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  59:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     used.
+  60:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  61:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  62:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  63:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  64:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  65:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  66:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  67:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  68:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  69:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  70:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  71:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  72:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  73:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  74:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  75:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  76:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  77:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     routines linked into the application.
+  78:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  79:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  80:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  81:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  82:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  83:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** */
+  84:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  85:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  86:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
+  87:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
+  88:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+  89:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  90:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef F_CPU
+  91:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  92:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  93:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /** \ingroup util_delay
+  94:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \def F_CPU
+  95:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     \brief CPU frequency in Hz
+  96:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+  97:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     The macro F_CPU specifies the CPU frequency to be considered by
+  98:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     the delay macros.  This macro is normally supplied by the
+  99:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     environment (e.g. from within a project header, or the project's
+ 100:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     Makefile).  The value 1 MHz here is only provided as a "vanilla"
+ 101:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     fallback if no such user-provided definition could be found.
+ 102:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 103:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     In terms of the delay functions, the CPU frequency can be given as
+ 104:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     a floating-point constant (e.g. 3.6864E6 for 3.6864 MHz).
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     However, the macros in <util/setbaud.h> require it to be an
+ 106:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****     integer value.
+ 107:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****  */
+ 108:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # define F_CPU 1000000UL
+ 109:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 110:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 111:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+ 112:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+ 113:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 114:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 115:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 116:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 117:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 118:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #  include <math.h>
+ 119:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #endif
+ 120:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 121:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** /**
+ 122:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \ingroup util_delay
+ 123:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 124:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 125:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 126:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 127:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 128:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 129:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 130:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 131:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 132:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 133:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 134:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 135:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 136:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 137:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles()
+ 138:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 139:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 140:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 141:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 142:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Conversion of \c __ms into clock cycles may not always result in
+ 143:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    integer.  By default, the clock cycles rounded up to next
+ 144:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    integer. This ensures that the user gets at least \c __ms
+ 145:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    microseconds of delay.
+ 146:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 147:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    Alternatively, by defining the macro \c __DELAY_ROUND_DOWN__, or
+ 148:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \c __DELAY_ROUND_CLOSEST__, before including this header file, the
+ 149:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    algorithm can be made to round down, or round to closest integer,
+ 150:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    respectively.
+ 151:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 152:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \note
+ 153:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 154:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    The implementation of _delay_ms() based on
+ 155:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    __builtin_avr_delay_cycles() is not backward compatible with older
+ 156:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    implementations.  In order to get functionality backward compatible
+ 157:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    with previous versions, the macro \c "__DELAY_BACKWARD_COMPATIBLE__"
+ 158:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    must be defined before including this header file. Also, the
+ 159:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    backward compatible algorithm will be chosen if the code is
+ 160:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    compiled in a <em>freestanding environment</em> (GCC option
+ 161:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    \c -ffreestanding), as the math functions required for rounding are
+ 162:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****    not available to the compiler then.
+ 163:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 164:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****  */
+ 165:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** void
+ 166:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 167:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** {
+ 168:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	double __tmp ;
+ 169:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 170:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 171:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 172:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 173:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 174:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 175:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 176:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 177:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 178:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 179:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 180:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 181:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 182:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#else
+ 183:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		//round up by default
+ 184:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 185:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	#endif
+ 186:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 187:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 188:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 
+ 189:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** #else
+ 190:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	uint16_t __ticks;
+ 191:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 4e3) * __ms;
+ 192:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	if (__tmp < 1.0)
+ 193:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks = 1;
+ 194:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	else if (__tmp > 65535)
+ 195:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 	{
+ 196:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		//	__ticks = requested delay in 1/10 ms
+ 197:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		__ticks = (uint16_t) (__ms * 10.0);
+ 198:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay.h **** 		while(__ticks)
+ 465               	.LM45:
+ 466 00b6 01F4      		brne .L12
+ 467               	.LBE97:
+ 468               	.LBE96:
+ 470               	.Ltext13:
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 LCD_sendString(profiles[selectedProfile].name);
+ 472               	.LM46:
+ 473 00b8 80E4      		ldi r24,lo8(64)
+ 474 00ba 00D0      		rcall LCD_changeAddress
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialChoiceState = 0;
+ 476               	.LM47:
+ 477 00bc 8091 0000 		lds r24,selectedProfile
+ 478 00c0 90E0      		ldi r25,0
+ 479 00c2 67E1      		ldi r22,lo8(23)
+ 480 00c4 70E0      		ldi r23,0
+ 481 00c6 00D0      		rcall __mulhi3
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialChoiceState = 0;
+ 483               	.LM48:
+ 484 00c8 8050      		subi r24,lo8(-(profiles))
+ 485 00ca 9040      		sbci r25,hi8(-(profiles))
+ 486 00cc 00D0      		rcall LCD_sendString
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             }
+ 488               	.LM49:
+ 489 00ce 1092 0000 		sts isInitialChoiceState,__zero_reg__
+ 490               	.L11:
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+ 492               	.LM50:
+ 493 00d2 B199      		sbic 0x16,1
+ 494 00d4 00C0      		rjmp .L13
+ 495               	.LBB100:
+ 496               	.LBB101:
+ 497               	.LBB102:
+ 498               	.LBB103:
+ 500               	.Ltext14:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 502               	.LM51:
+ 503 00d6 C701      		movw r24,r14
+ 504               	/* #APP */
+ 505               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 506 00d8 0197      		1: sbiw r24,1
+ 507 00da 01F4      		brne 1b
+ 508               	 ;  0 "" 2
+ 509               	/* #NOAPP */
+ 510               	.LBE103:
+ 511               	.LBE102:
+ 512               	.LBE101:
+ 513               	.LBE100:
+ 515               	.Ltext15:
+  74:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(1000);
+ 517               	.LM52:
+ 518 00dc 60E0      		ldi r22,lo8(.LC5)
+ 519 00de 70E0      		ldi r23,hi8(.LC5)
+ 520 00e0 80E0      		ldi r24,lo8(.LC6)
+ 521 00e2 90E0      		ldi r25,hi8(.LC6)
+ 522 00e4 00D0      		rcall lcdPrint
+ 523 00e6 80E1      		ldi r24,lo8(16)
+ 524 00e8 97E2      		ldi r25,lo8(39)
+ 525               	.L14:
+ 526               	.LBB104:
+ 527               	.LBB79:
+ 528               	.LBB78:
+ 529               	.LBB77:
+ 531               	.Ltext16:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 533               	.LM53:
+ 534 00ea FE01      		movw r30,r28
+ 535               	/* #APP */
+ 536               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 537 00ec 3197      		1: sbiw r30,1
+ 538 00ee 01F4      		brne 1b
+ 539               	 ;  0 "" 2
+ 540               	/* #NOAPP */
+ 541 00f0 0197      		sbiw r24,1
+ 542               	.LBE77:
+ 543               	.LBE78:
+ 545               	.Ltext17:
+ 547               	.LM54:
+ 548 00f2 01F4      		brne .L14
+ 549               	.LBE79:
+ 550               	.LBE104:
+ 552               	.Ltext18:
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(800);
+ 554               	.LM55:
+ 555 00f4 8091 0000 		lds r24,selectedProfile
+ 556 00f8 90E0      		ldi r25,0
+ 557 00fa 67E1      		ldi r22,lo8(23)
+ 558 00fc 70E0      		ldi r23,0
+ 559 00fe 00D0      		rcall __mulhi3
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(800);
+ 561               	.LM56:
+ 562 0100 60E0      		ldi r22,lo8(.LC3)
+ 563 0102 70E0      		ldi r23,hi8(.LC3)
+ 564 0104 8050      		subi r24,lo8(-(profiles))
+ 565 0106 9040      		sbci r25,hi8(-(profiles))
+ 566 0108 00D0      		rcall lcdPrint
+ 567 010a 80E4      		ldi r24,lo8(64)
+ 568 010c 9FE1      		ldi r25,lo8(31)
+ 569               	.L15:
+ 570               	.LBB105:
+ 571               	.LBB106:
+ 572               	.LBB107:
+ 573               	.LBB108:
+ 575               	.Ltext19:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 577               	.LM57:
+ 578 010e FE01      		movw r30,r28
+ 579               	/* #APP */
+ 580               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 581 0110 3197      		1: sbiw r30,1
+ 582 0112 01F4      		brne 1b
+ 583               	 ;  0 "" 2
+ 584               	/* #NOAPP */
+ 585 0114 0197      		sbiw r24,1
+ 586               	.LBE108:
+ 587               	.LBE107:
+ 589               	.Ltext20:
+ 591               	.LM58:
+ 592 0116 01F4      		brne .L15
+ 593               	.LBE106:
+ 594               	.LBE105:
+ 596               	.Ltext21:
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(900);
+ 598               	.LM59:
+ 599 0118 60E0      		ldi r22,lo8(.LC3)
+ 600 011a 70E0      		ldi r23,hi8(.LC3)
+ 601 011c 80E0      		ldi r24,lo8(.LC7)
+ 602 011e 90E0      		ldi r25,hi8(.LC7)
+ 603 0120 00D0      		rcall lcdPrint
+ 604 0122 88E2      		ldi r24,lo8(40)
+ 605 0124 93E2      		ldi r25,lo8(35)
+ 606               	.L16:
+ 607               	.LBB109:
+ 608               	.LBB110:
+ 609               	.LBB111:
+ 610               	.LBB112:
+ 612               	.Ltext22:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 614               	.LM60:
+ 615 0126 FE01      		movw r30,r28
+ 616               	/* #APP */
+ 617               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 618 0128 3197      		1: sbiw r30,1
+ 619 012a 01F4      		brne 1b
+ 620               	 ;  0 "" 2
+ 621               	/* #NOAPP */
+ 622 012c 0197      		sbiw r24,1
+ 623               	.LBE112:
+ 624               	.LBE111:
+ 626               	.Ltext23:
+ 628               	.LM61:
+ 629 012e 01F4      		brne .L16
+ 630               	.LBE110:
+ 631               	.LBE109:
+ 633               	.Ltext24:
+  80:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 stopped = true;
+ 635               	.LM62:
+ 636 0130 1092 0000 		sts input,__zero_reg__
+ 638               	.LM63:
+ 639 0134 1093 0000 		sts stopped,r17
+  82:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialState = true;
+ 641               	.LM64:
+ 642 0138 1093 0000 		sts isInitialState,r17
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 isInitialChoiceState = true;
+ 644               	.LM65:
+ 645 013c 1093 0000 		sts isInitialChoiceState,r17
+  84:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  85:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 RELAY_PORT |= RELAY_MASK;
+ 647               	.LM66:
+ 648 0140 C29A      		sbi 0x18,2
+  86:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 action();
+ 650               	.LM67:
+ 651 0142 00D0      		rcall action
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 selectedProfile = 0;
+ 653               	.LM68:
+ 654 0144 1092 0000 		sts selectedProfile,__zero_reg__
+  88:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 lcdPrint("    All Done    ", "                ");
+ 656               	.LM69:
+ 657 0148 60E0      		ldi r22,lo8(.LC3)
+ 658 014a 70E0      		ldi r23,hi8(.LC3)
+ 659 014c 80E0      		ldi r24,lo8(.LC8)
+ 660 014e 90E0      		ldi r25,hi8(.LC8)
+ 661 0150 00D0      		rcall lcdPrint
+ 662 0152 80E2      		ldi r24,lo8(32)
+ 663 0154 9EE4      		ldi r25,lo8(78)
+ 664               	.L17:
+ 665               	.LBB113:
+ 666               	.LBB114:
+ 667               	.LBB115:
+ 668               	.LBB116:
+ 670               	.Ltext25:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 672               	.LM70:
+ 673 0156 FE01      		movw r30,r28
+ 674               	/* #APP */
+ 675               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 676 0158 3197      		1: sbiw r30,1
+ 677 015a 01F4      		brne 1b
+ 678               	 ;  0 "" 2
+ 679               	/* #NOAPP */
+ 680 015c 0197      		sbiw r24,1
+ 681               	.LBE116:
+ 682               	.LBE115:
+ 684               	.Ltext26:
+ 686               	.LM71:
+ 687 015e 01F4      		brne .L17
+ 688               	.LBE114:
+ 689               	.LBE113:
+ 691               	.Ltext27:
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(2000);
+  90:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 beep();
+ 693               	.LM72:
+ 694 0160 00D0      		rcall beep
+ 695 0162 00C0      		rjmp .L3
+ 696               	.L13:
+  91:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c **** 
+  92:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****             } else if ((NEXT_BUTTON_PIN & NEXT_BUTTON_MASK) == 0){
+ 698               	.LM73:
+ 699 0164 B099      		sbic 0x16,0
+ 700 0166 00C0      		rjmp .L3
+ 701               	.LBB117:
+ 702               	.LBB72:
+ 703               	.LBB71:
+ 704               	.LBB70:
+ 706               	.Ltext28:
+ 105:/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h **** 		"1: sbiw %0,1" "\n\t"
+ 708               	.LM74:
+ 709 0168 C701      		movw r24,r14
+ 710               	/* #APP */
+ 711               	 ;  105 "/opt/homebrew/Cellar/avr-gcc@9/9.3.0_3/avr/include/util/delay_basic.h" 1
+ 712 016a 0197      		1: sbiw r24,1
+ 713 016c 01F4      		brne 1b
+ 714               	 ;  0 "" 2
+ 715               	/* #NOAPP */
+ 716               	.LBE70:
+ 717               	.LBE71:
+ 718               	.LBE72:
+ 719               	.LBE117:
+ 721               	.Ltext29:
+  93:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 _delay_ms(150);
+  94:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 if (selectedProfile >= CHOICES_COUNT -1){
+ 723               	.LM75:
+ 724 016e 8091 0000 		lds r24,selectedProfile
+ 726               	.LM76:
+ 727 0172 8330      		cpi r24,lo8(3)
+ 728 0174 00F0      		brlo .L18
+  95:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                     selectedProfile = 0;
+ 730               	.LM77:
+ 731 0176 1092 0000 		sts selectedProfile,__zero_reg__
+ 732               	.L19:
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 } else {
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                     selectedProfile++;
+  98:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 }
+  99:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 LCD_changeAddress(0x40);
+ 734               	.LM78:
+ 735 017a 80E4      		ldi r24,lo8(64)
+ 736 017c 00D0      		rcall LCD_changeAddress
+ 100:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 LCD_sendString(profiles[selectedProfile].name);
+ 738               	.LM79:
+ 739 017e 8091 0000 		lds r24,selectedProfile
+ 740 0182 90E0      		ldi r25,0
+ 741 0184 67E1      		ldi r22,lo8(23)
+ 742 0186 70E0      		ldi r23,0
+ 743 0188 00D0      		rcall __mulhi3
+ 745               	.LM80:
+ 746 018a 8050      		subi r24,lo8(-(profiles))
+ 747 018c 9040      		sbci r25,hi8(-(profiles))
+ 748 018e 00D0      		rcall LCD_sendString
+ 749 0190 00C0      		rjmp .L3
+ 750               	.L18:
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/main.c ****                 }
+ 752               	.LM81:
+ 753 0192 8F5F      		subi r24,lo8(-(1))
+ 754 0194 8093 0000 		sts selectedProfile,r24
+ 755 0198 00C0      		rjmp .L19
+ 757               	.Lscope2:
+ 758               		.comm	relay_state,2,1
+ 760               		.comm	summation,4,1
+ 762               		.comm	targetTemperature,2,1
+ 764               		.comm	adc,2,1
+ 766               	.global	profiles
+ 767               		.data
+ 770               	profiles:
+ 771 0000 4F6C 2720 		.string	"Ol' fashioned :)"
+ 771      6661 7368 
+ 771      696F 6E65 
+ 771      6420 3A29 
+ 771      00
+ 772 0011 4B        		.byte	75
+ 773 0012 8C        		.byte	-116
+ 774 0013 2D        		.byte	45
+ 775 0014 7D        		.byte	125
+ 776 0015 CD        		.byte	-51
+ 777 0016 14        		.byte	20
+ 778 0017 2020 2020 		.string	"    Profile 2   "
+ 778      5072 6F66 
+ 778      696C 6520 
+ 778      3220 2020 
+ 778      00
+ 779 0028 4B        		.byte	75
+ 780 0029 8C        		.byte	-116
+ 781 002a 2D        		.byte	45
+ 782 002b 7D        		.byte	125
+ 783 002c CD        		.byte	-51
+ 784 002d 14        		.byte	20
+ 785 002e 2020 2020 		.string	"    Profile 3   "
+ 785      5072 6F66 
+ 785      696C 6520 
+ 785      3320 2020 
+ 785      00
+ 786 003f 4B        		.byte	75
+ 787 0040 8C        		.byte	-116
+ 788 0041 2D        		.byte	45
+ 789 0042 7D        		.byte	125
+ 790 0043 CD        		.byte	-51
+ 791 0044 14        		.byte	20
+ 792 0045 2020 2020 		.string	"    Profile 4   "
+ 792      5072 6F66 
+ 792      696C 6520 
+ 792      3420 2020 
+ 792      00
+ 793 0056 4B        		.byte	75
+ 794 0057 8C        		.byte	-116
+ 795 0058 2D        		.byte	45
+ 796 0059 7D        		.byte	125
+ 797 005a CD        		.byte	-51
+ 798 005b 14        		.byte	20
+ 800               		.comm	isInitialChoiceState,1,1
+ 802               		.comm	isInitialState,1,1
+ 804               		.comm	profileSelected,1,1
+ 806               		.comm	selectedProfile,1,1
+ 808               		.comm	input,1,1
+ 810               		.comm	stopped,1,1
+ 812               		.comm	started,1,1
+ 814               		.text
+ 816               	.Letext0:
+ 817               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 818               	.global __do_copy_data
+ 819               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:150    .text:0000000000000000 initIO
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:213    .text.startup:0000000000000000 main
+                            *COM*:0000000000000001 stopped
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 isInitialChoiceState
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccnvFBsA.s:770    .data:0000000000000000 profiles
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:0000000000000002 adc
+                            *COM*:0000000000000001 started
+
+UNDEFINED SYMBOLS
+initLCD
+initHeater
+initSensor
+LCD_clear
+lcdPrint
+LCD_changeAddress
+__mulhi3
+LCD_sendString
+action
+beep
+__do_copy_data
+__do_clear_bss

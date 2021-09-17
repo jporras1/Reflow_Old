@@ -1,0 +1,817 @@
+   1               		.file	"nuts_bolts.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 147               	.global	__mulsi3
+ 154               	.global	map
+ 156               	map:
+   1:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //
+   2:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //  nuts_bolts.c
+   3:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //  Index
+   4:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //
+   5:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //  Created by Javier Porras jr on 4/6/21.
+   6:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //  Copyright © 2021 Javier Porras jr. All rights reserved.
+   7:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** //
+   8:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+   9:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  10:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #include "machine.h"
+  11:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  12:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // the prescaler is set so that timer0 ticks every 64 clock cycles, and the
+  13:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // the overflow handler is called every 256 ticks.
+  14:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(64 * 256))
+  15:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  16:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // the whole number of milliseconds per timer0 overflow
+  17:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #define MILLIS_INC (MICROSECONDS_PER_TIMER0_OVERFLOW / 1000)
+  18:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  19:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // the fractional number of milliseconds per timer0 overflow. we shift right
+  20:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // by three to fit these numbers into a byte. (for the clock speeds we care
+  21:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** // about - 8 and 16 MHz - this doesn't lose precision.)
+  22:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
+  23:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #define FRACT_MAX (1000 >> 3)
+  24:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  25:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** volatile unsigned long timer0_overflow_count = 0;
+  26:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** volatile unsigned long timer0_millis = 0;
+  27:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** static unsigned char timer0_fract = 0;
+  28:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  29:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** /* ------------------------------------------------------------------------ */
+  30:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  31:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** long map(long x, long in_min, long in_max, long out_min, long out_max){
+ 158               	.LM0:
+ 159               	.LFBB1:
+ 160 0000 4F92      		push r4
+ 161 0002 5F92      		push r5
+ 162 0004 6F92      		push r6
+ 163 0006 7F92      		push r7
+ 164 0008 8F92      		push r8
+ 165 000a 9F92      		push r9
+ 166 000c AF92      		push r10
+ 167 000e BF92      		push r11
+ 168 0010 CF92      		push r12
+ 169 0012 DF92      		push r13
+ 170 0014 EF92      		push r14
+ 171 0016 FF92      		push r15
+ 172 0018 0F93      		push r16
+ 173 001a 1F93      		push r17
+ 174 001c CF93      		push r28
+ 175 001e DF93      		push r29
+ 176 0020 CDB7      		in r28,__SP_L__
+ 177 0022 DEB7      		in r29,__SP_H__
+ 178 0024 2897      		sbiw r28,8
+ 179 0026 0FB6      		in __tmp_reg__,__SREG__
+ 180 0028 F894      		cli
+ 181 002a DEBF      		out __SP_H__,r29
+ 182 002c 0FBE      		out __SREG__,__tmp_reg__
+ 183 002e CDBF      		out __SP_L__,r28
+ 184               	/* prologue: function */
+ 185               	/* frame size = 8 */
+ 186               	/* stack size = 24 */
+ 187               	.L__stack_usage = 24
+ 188 0030 6D83      		std Y+5,r22
+ 189 0032 7E83      		std Y+6,r23
+ 190 0034 8F83      		std Y+7,r24
+ 191 0036 9887      		std Y+8,r25
+ 192 0038 2901      		movw r4,r18
+ 193 003a 3A01      		movw r6,r20
+ 194 003c E982      		std Y+1,r14
+ 195 003e FA82      		std Y+2,r15
+ 196 0040 0B83      		std Y+3,r16
+ 197 0042 1C83      		std Y+4,r17
+ 198 0044 8A2C      		mov r8,r10
+ 199 0046 9B2C      		mov r9,r11
+ 200 0048 5601      		movw r10,r12
+  32:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+ 202               	.LM1:
+ 203 004a 8D81      		ldd r24,Y+5
+ 204 004c 9E81      		ldd r25,Y+6
+ 205 004e AF81      		ldd r26,Y+7
+ 206 0050 B885      		ldd r27,Y+8
+ 207 0052 8419      		sub r24,r4
+ 208 0054 9509      		sbc r25,r5
+ 209 0056 A609      		sbc r26,r6
+ 210 0058 B709      		sbc r27,r7
+ 211 005a 8D83      		std Y+5,r24
+ 212 005c 9E83      		std Y+6,r25
+ 213 005e AF83      		std Y+7,r26
+ 214 0060 B887      		std Y+8,r27
+ 216               	.LM2:
+ 217 0062 8B8D      		ldd r24,Y+27
+ 218 0064 9C8D      		ldd r25,Y+28
+ 219 0066 AD8D      		ldd r26,Y+29
+ 220 0068 BE8D      		ldd r27,Y+30
+ 221 006a 9C01      		movw r18,r24
+ 222 006c AD01      		movw r20,r26
+ 223 006e 2819      		sub r18,r8
+ 224 0070 3909      		sbc r19,r9
+ 225 0072 4A09      		sbc r20,r10
+ 226 0074 5B09      		sbc r21,r11
+ 228               	.LM3:
+ 229 0076 6D81      		ldd r22,Y+5
+ 230 0078 7E81      		ldd r23,Y+6
+ 231 007a 8F81      		ldd r24,Y+7
+ 232 007c 9885      		ldd r25,Y+8
+ 233 007e 00D0      		rcall __mulsi3
+ 235               	.LM4:
+ 236 0080 2981      		ldd r18,Y+1
+ 237 0082 3A81      		ldd r19,Y+2
+ 238 0084 4B81      		ldd r20,Y+3
+ 239 0086 5C81      		ldd r21,Y+4
+ 240 0088 2419      		sub r18,r4
+ 241 008a 3509      		sbc r19,r5
+ 242 008c 4609      		sbc r20,r6
+ 243 008e 5709      		sbc r21,r7
+ 245               	.LM5:
+ 246 0090 00D0      		rcall __divmodsi4
+ 248               	.LM6:
+ 249 0092 DA01      		movw r26,r20
+ 250 0094 C901      		movw r24,r18
+ 251 0096 880D      		add r24,r8
+ 252 0098 991D      		adc r25,r9
+ 253 009a AA1D      		adc r26,r10
+ 254 009c BB1D      		adc r27,r11
+  33:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 256               	.LM7:
+ 257 009e BC01      		movw r22,r24
+ 258 00a0 CD01      		movw r24,r26
+ 259               	/* epilogue start */
+ 260 00a2 2896      		adiw r28,8
+ 261 00a4 0FB6      		in __tmp_reg__,__SREG__
+ 262 00a6 F894      		cli
+ 263 00a8 DEBF      		out __SP_H__,r29
+ 264 00aa 0FBE      		out __SREG__,__tmp_reg__
+ 265 00ac CDBF      		out __SP_L__,r28
+ 266 00ae DF91      		pop r29
+ 267 00b0 CF91      		pop r28
+ 268 00b2 1F91      		pop r17
+ 269 00b4 0F91      		pop r16
+ 270 00b6 FF90      		pop r15
+ 271 00b8 EF90      		pop r14
+ 272 00ba DF90      		pop r13
+ 273 00bc CF90      		pop r12
+ 274 00be BF90      		pop r11
+ 275 00c0 AF90      		pop r10
+ 276 00c2 9F90      		pop r9
+ 277 00c4 8F90      		pop r8
+ 278 00c6 7F90      		pop r7
+ 279 00c8 6F90      		pop r6
+ 280 00ca 5F90      		pop r5
+ 281 00cc 4F90      		pop r4
+ 282 00ce 0895      		ret
+ 285               	.Lscope1:
+ 287               	.global	__vector_11
+ 289               	__vector_11:
+  34:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  35:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** ISR(TIM0_OVF_vect){
+ 291               	.LM8:
+ 292               	.LFBB2:
+ 293 00d0 1F92 1FB6 		__gcc_isr 1
+ 293      1F92 1124 
+ 293      2F93 
+ 294 00da 3F93      		push r19
+ 295 00dc 8F93      		push r24
+ 296 00de 9F93      		push r25
+ 297 00e0 AF93      		push r26
+ 298 00e2 BF93      		push r27
+ 299               	/* prologue: Signal */
+ 300               	/* frame size = 0 */
+ 301               	/* stack size = 5...9 */
+ 302               	.L__stack_usage = 5 + __gcc_isr.n_pushed
+  36:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // copy these to local variables so they can be stored in registers
+  37:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // (volatile variables must be read from memory on every access)
+  38:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     unsigned long m = timer0_millis;
+ 304               	.LM9:
+ 305 00e4 8091 0000 		lds r24,timer0_millis
+ 306 00e8 9091 0000 		lds r25,timer0_millis+1
+ 307 00ec A091 0000 		lds r26,timer0_millis+2
+ 308 00f0 B091 0000 		lds r27,timer0_millis+3
+  39:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     unsigned char f = timer0_fract;
+ 310               	.LM10:
+ 311 00f4 3091 0000 		lds r19,timer0_fract
+  40:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     m += MILLIS_INC;
+  42:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     f += FRACT_INC;
+ 313               	.LM11:
+ 314 00f8 20E3      		ldi r18,lo8(48)
+ 315 00fa 230F      		add r18,r19
+  43:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (f >= FRACT_MAX) {
+ 317               	.LM12:
+ 318 00fc 2D37      		cpi r18,lo8(125)
+ 319 00fe 00F4      		brsh .L3
+  41:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     f += FRACT_INC;
+ 321               	.LM13:
+ 322 0100 4096      		adiw r24,16
+ 323 0102 A11D      		adc r26,__zero_reg__
+ 324 0104 B11D      		adc r27,__zero_reg__
+ 325               	.L4:
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****         f -= FRACT_MAX;
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****         m += 1;
+  46:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     }
+  47:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  48:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     timer0_fract = f;
+ 327               	.LM14:
+ 328 0106 2093 0000 		sts timer0_fract,r18
+  49:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     timer0_millis = m;
+ 330               	.LM15:
+ 331 010a 8093 0000 		sts timer0_millis,r24
+ 332 010e 9093 0000 		sts timer0_millis+1,r25
+ 333 0112 A093 0000 		sts timer0_millis+2,r26
+ 334 0116 B093 0000 		sts timer0_millis+3,r27
+  50:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     timer0_overflow_count++;
+ 336               	.LM16:
+ 337 011a 8091 0000 		lds r24,timer0_overflow_count
+ 338 011e 9091 0000 		lds r25,timer0_overflow_count+1
+ 339 0122 A091 0000 		lds r26,timer0_overflow_count+2
+ 340 0126 B091 0000 		lds r27,timer0_overflow_count+3
+ 341 012a 0196      		adiw r24,1
+ 342 012c A11D      		adc r26,__zero_reg__
+ 343 012e B11D      		adc r27,__zero_reg__
+ 344 0130 8093 0000 		sts timer0_overflow_count,r24
+ 345 0134 9093 0000 		sts timer0_overflow_count+1,r25
+ 346 0138 A093 0000 		sts timer0_overflow_count+2,r26
+ 347 013c B093 0000 		sts timer0_overflow_count+3,r27
+ 348               	/* epilogue start */
+  51:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 350               	.LM17:
+ 351 0140 BF91      		pop r27
+ 352 0142 AF91      		pop r26
+ 353 0144 9F91      		pop r25
+ 354 0146 8F91      		pop r24
+ 355 0148 3F91      		pop r19
+ 356 014a 2F91 1F90 		__gcc_isr 2
+ 356      1FBE 1F90 
+ 357 0152 1895      		reti
+ 358               	.L3:
+  44:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****         m += 1;
+ 360               	.LM18:
+ 361 0154 23EB      		ldi r18,lo8(-77)
+ 362 0156 230F      		add r18,r19
+  45:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     }
+ 364               	.LM19:
+ 365 0158 4196      		adiw r24,17
+ 366 015a A11D      		adc r26,__zero_reg__
+ 367 015c B11D      		adc r27,__zero_reg__
+ 368 015e 00C0      		rjmp .L4
+ 369               		__gcc_isr 0,r18
+ 371               	.Lscope2:
+ 373               	.global	millis
+ 375               	millis:
+  52:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  53:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** unsigned long millis(){
+ 377               	.LM20:
+ 378               	.LFBB3:
+ 379 0160 CF93      		push r28
+ 380 0162 DF93      		push r29
+ 381 0164 00D0      		rcall .
+ 382 0166 00D0      		rcall .
+ 383 0168 CDB7      		in r28,__SP_L__
+ 384 016a DEB7      		in r29,__SP_H__
+ 385               	/* prologue: function */
+ 386               	/* frame size = 4 */
+ 387               	/* stack size = 6 */
+ 388               	.L__stack_usage = 6
+  54:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     unsigned long m;
+  55:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     uint8_t oldSREG = SREG;
+ 390               	.LM21:
+ 391 016c 8FB7      		in r24,__SREG__
+  56:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  57:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // disable interrupts while we read timer0_millis or we might get an
+  58:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // inconsistent value (e.g. in the middle of a write to timer0_millis)
+  59:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     cli();
+ 393               	.LM22:
+ 394               	/* #APP */
+ 395               	 ;  59 "/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c" 1
+ 396 016e F894      		cli
+ 397               	 ;  0 "" 2
+  60:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     m = timer0_millis;
+ 399               	.LM23:
+ 400               	/* #NOAPP */
+ 401 0170 2091 0000 		lds r18,timer0_millis
+ 402 0174 3091 0000 		lds r19,timer0_millis+1
+ 403 0178 4091 0000 		lds r20,timer0_millis+2
+ 404 017c 5091 0000 		lds r21,timer0_millis+3
+ 405 0180 2983      		std Y+1,r18
+ 406 0182 3A83      		std Y+2,r19
+ 407 0184 4B83      		std Y+3,r20
+ 408 0186 5C83      		std Y+4,r21
+  61:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     SREG = oldSREG;
+ 410               	.LM24:
+ 411 0188 8FBF      		out __SREG__,r24
+  62:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  63:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     return m;
+  64:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 413               	.LM25:
+ 414 018a 6981      		ldd r22,Y+1
+ 415 018c 7A81      		ldd r23,Y+2
+ 416 018e 8B81      		ldd r24,Y+3
+ 417 0190 9C81      		ldd r25,Y+4
+ 418               	/* epilogue start */
+ 419 0192 0F90      		pop __tmp_reg__
+ 420 0194 0F90      		pop __tmp_reg__
+ 421 0196 0F90      		pop __tmp_reg__
+ 422 0198 0F90      		pop __tmp_reg__
+ 423 019a DF91      		pop r29
+ 424 019c CF91      		pop r28
+ 425 019e 0895      		ret
+ 431               	.Lscope3:
+ 433               	.global	micros
+ 435               	micros:
+  65:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  66:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** unsigned long micros() {
+ 437               	.LM26:
+ 438               	.LFBB4:
+ 439 01a0 CF93      		push r28
+ 440 01a2 DF93      		push r29
+ 441 01a4 00D0      		rcall .
+ 442 01a6 00D0      		rcall .
+ 443 01a8 CDB7      		in r28,__SP_L__
+ 444 01aa DEB7      		in r29,__SP_H__
+ 445               	/* prologue: function */
+ 446               	/* frame size = 4 */
+ 447               	/* stack size = 6 */
+ 448               	.L__stack_usage = 6
+  67:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     unsigned long m;
+  68:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     uint8_t oldSREG = SREG, t;
+ 450               	.LM27:
+ 451 01ac 3FB7      		in r19,__SREG__
+  69:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  70:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     cli();
+ 453               	.LM28:
+ 454               	/* #APP */
+ 455               	 ;  70 "/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c" 1
+ 456 01ae F894      		cli
+ 457               	 ;  0 "" 2
+  71:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     m = timer0_overflow_count;
+ 459               	.LM29:
+ 460               	/* #NOAPP */
+ 461 01b0 8091 0000 		lds r24,timer0_overflow_count
+ 462 01b4 9091 0000 		lds r25,timer0_overflow_count+1
+ 463 01b8 A091 0000 		lds r26,timer0_overflow_count+2
+ 464 01bc B091 0000 		lds r27,timer0_overflow_count+3
+  72:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCNT0)
+  73:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     t = TCNT0;
+ 466               	.LM30:
+ 467 01c0 22B7      		in r18,0x32
+  74:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCNT0L)
+  75:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     t = TCNT0L;
+  76:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+  77:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #error TIMER 0 not defined
+  78:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+  79:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  80:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  81:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #ifdef TIFR0
+  82:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if ((TIFR0 & _BV(TOV0)) && (t < 255))
+ 469               	.LM31:
+ 470 01c2 08B6      		in __tmp_reg__,0x38
+ 471 01c4 00FE      		sbrs __tmp_reg__,0
+ 472 01c6 00C0      		rjmp .L7
+ 474               	.LM32:
+ 475 01c8 2F3F      		cpi r18,lo8(-1)
+ 476 01ca 01F0      		breq .L7
+  83:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****         m++;
+ 478               	.LM33:
+ 479 01cc 0196      		adiw r24,1
+ 480 01ce A11D      		adc r26,__zero_reg__
+ 481 01d0 B11D      		adc r27,__zero_reg__
+ 482               	.L7:
+  84:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+  85:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if ((TIFR & _BV(TOV0)) && (t < 255))
+  86:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****         m++;
+  87:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+  88:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  89:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     SREG = oldSREG;
+ 484               	.LM34:
+ 485 01d2 3FBF      		out __SREG__,r19
+  90:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  91:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     return ((m << 8) + t) * (64 / clockCyclesPerMicrosecond());
+ 487               	.LM35:
+ 488 01d4 BA2F      		mov r27,r26
+ 489 01d6 A92F      		mov r26,r25
+ 490 01d8 982F      		mov r25,r24
+ 491 01da 8827      		clr r24
+ 493               	.LM36:
+ 494 01dc 820F      		add r24,r18
+ 495 01de 911D      		adc r25,__zero_reg__
+ 496 01e0 A11D      		adc r26,__zero_reg__
+ 497 01e2 B11D      		adc r27,__zero_reg__
+ 499               	.LM37:
+ 500 01e4 9C01      		movw r18,r24
+ 501 01e6 AD01      		movw r20,r26
+ 502 01e8 66E0      		ldi r22,6
+ 503               		1:
+ 504 01ea 220F      		lsl r18
+ 505 01ec 331F      		rol r19
+ 506 01ee 441F      		rol r20
+ 507 01f0 551F      		rol r21
+ 508 01f2 6A95      		dec r22
+ 509 01f4 01F4      		brne 1b
+  92:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 511               	.LM38:
+ 512 01f6 CA01      		movw r24,r20
+ 513 01f8 B901      		movw r22,r18
+ 514               	/* epilogue start */
+ 515 01fa 0F90      		pop __tmp_reg__
+ 516 01fc 0F90      		pop __tmp_reg__
+ 517 01fe 0F90      		pop __tmp_reg__
+ 518 0200 0F90      		pop __tmp_reg__
+ 519 0202 DF91      		pop r29
+ 520 0204 CF91      		pop r28
+ 521 0206 0895      		ret
+ 528               	.Lscope4:
+ 531               	.global	delayMicroseconds
+ 533               	delayMicroseconds:
+  93:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  94:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+  95:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** /* Delay for the given number of microseconds.  Assumes a 1, 8, 12, 16, 20 or 24 MHz clock. */
+  96:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** void delayMicroseconds(unsigned int us){
+ 535               	.LM39:
+ 536               	.LFBB5:
+ 537               	/* prologue: function */
+ 538               	/* frame size = 0 */
+ 539               	/* stack size = 0 */
+ 540               	.L__stack_usage = 0
+  97:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // call = 4 cycles + 2 to 4 cycles to init us(2 for constant delay, 4 for variable)
+  98:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+  99:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // calling avrlib's delay_us() function with low values (e.g. 1 or
+ 100:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // 2 microseconds) gives delays longer than desired.
+ 101:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     //delay_us(us);
+ 102:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if F_CPU >= 24000000L
+ 103:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 24 MHz clock for the aventurous ones, trying to overclock
+ 104:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 105:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // zero delay fix
+ 106:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (!us) return; //  = 3 cycles, (4 when true)
+ 107:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 108:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes a 1/6 of a microsecond (4 cycles)
+ 109:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it six times for each microsecond of
+ 110:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // delay requested.
+ 111:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us *= 6; // x6 us, = 7 cycles
+ 112:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 113:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // account for the time taken in the preceeding commands.
+ 114:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // we just burned 22 (24) cycles above, remove 5, (5*4=20)
+ 115:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 6 so we can substract 5
+ 116:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 5; //=2 cycles
+ 117:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 118:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif F_CPU >= 20000000L
+ 119:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 20 MHz clock on rare Arduino boards
+ 120:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 121:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for a one-microsecond delay, simply return.  the overhead
+ 122:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // of the function call takes 18 (20) cycles, which is 1us
+ 123:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     __asm__ __volatile__ (
+ 124:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "nop" "\n\t"
+ 125:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "nop" "\n\t"
+ 126:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "nop" "\n\t"
+ 127:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "nop"); //just waiting 4 cycles
+ 128:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 1) return; //  = 3 cycles, (4 when true)
+ 129:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 130:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes a 1/5 of a microsecond (4 cycles)
+ 131:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it five times for each microsecond of
+ 132:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // delay requested.
+ 133:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us = (us << 2) + us; // x5 us, = 7 cycles
+ 134:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 135:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // account for the time taken in the preceeding commands.
+ 136:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // we just burned 26 (28) cycles above, remove 7, (7*4=28)
+ 137:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 10 so we can substract 7
+ 138:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 7; // 2 cycles
+ 139:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 140:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif F_CPU >= 16000000L
+ 141:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 16 MHz clock on most Arduino boards
+ 142:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 143:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for a one-microsecond delay, simply return.  the overhead
+ 144:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // of the function call takes 14 (16) cycles, which is 1us
+ 145:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 1) return; //  = 3 cycles, (4 when true)
+ 146:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 147:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes 1/4 of a microsecond (4 cycles)
+ 148:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it four times for each microsecond of
+ 149:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // delay requested.
+ 150:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us <<= 2; // x4 us, = 4 cycles
+ 151:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 152:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // account for the time taken in the preceeding commands.
+ 153:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // we just burned 19 (21) cycles above, remove 5, (5*4=20)
+ 154:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 8 so we can substract 5
+ 155:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 5; // = 2 cycles,
+ 156:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 157:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif F_CPU >= 12000000L
+ 158:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 12 MHz clock if somebody is working with USB
+ 159:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 160:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for a 1 microsecond delay, simply return.  the overhead
+ 161:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // of the function call takes 14 (16) cycles, which is 1.5us
+ 162:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 1) return; //  = 3 cycles, (4 when true)
+ 163:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 164:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes 1/3 of a microsecond (4 cycles)
+ 165:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it three times for each microsecond of
+ 166:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // delay requested.
+ 167:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us = (us << 1) + us; // x3 us, = 5 cycles
+ 168:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 169:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // account for the time taken in the preceeding commands.
+ 170:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // we just burned 20 (22) cycles above, remove 5, (5*4=20)
+ 171:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 6 so we can substract 5
+ 172:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 5; //2 cycles
+ 173:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 174:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif F_CPU >= 8000000L
+ 175:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 8 MHz internal clock
+ 176:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 177:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for a 1 and 2 microsecond delay, simply return.  the overhead
+ 178:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // of the function call takes 14 (16) cycles, which is 2us
+ 179:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 2) return; //  = 3 cycles, (4 when true)
+ 180:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 181:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes 1/2 of a microsecond (4 cycles)
+ 182:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it twice for each microsecond of
+ 183:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // delay requested.
+ 184:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us <<= 1; //x2 us, = 2 cycles
+ 185:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 186:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // account for the time taken in the preceeding commands.
+ 187:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // we just burned 17 (19) cycles above, remove 4, (4*4=16)
+ 188:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 6 so we can substract 4
+ 189:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 4; // = 2 cycles
+ 190:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 191:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+ 192:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // for the 1 MHz internal clock (default settings for common Atmega microcontrollers)
+ 193:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 194:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the overhead of the function calls is 14 (16) cycles
+ 195:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 16) return; //= 3 cycles, (4 when true)
+ 196:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     if (us <= 25) return; //= 3 cycles, (4 when true), (must be at least 25 if we want to substract
+ 542               	.LM40:
+ 543 0208 8A31      		cpi r24,26
+ 544 020a 9105      		cpc r25,__zero_reg__
+ 545 020c 00F0      		brlo .L14
+ 197:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 198:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // compensate for the time taken by the preceeding and next commands (about 22 cycles)
+ 199:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us -= 22; // = 2 cycles
+ 547               	.LM41:
+ 548 020e 4697      		sbiw r24,22
+ 200:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the following loop takes 4 microseconds (4 cycles)
+ 201:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // per iteration, so execute it us/4 times
+ 202:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // us is at least 4, divided by 4 gives us 1 (no zero delay bug)
+ 203:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     us >>= 2; // us div 4, = 4 cycles
+ 550               	.LM42:
+ 551 0210 9695      		lsr r25
+ 552 0212 8795      		ror r24
+ 553 0214 9695      		lsr r25
+ 554 0216 8795      		ror r24
+ 204:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 205:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 206:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 207:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 208:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // busy wait
+ 209:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     __asm__ __volatile__ (
+ 556               	.LM43:
+ 557               	/* #APP */
+ 558               	 ;  209 "/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c" 1
+ 559 0218 0197      		1: sbiw r24,1
+ 560 021a 01F4      		brne 1b
+ 561               	 ;  0 "" 2
+ 562               	/* #NOAPP */
+ 563               	.L14:
+ 564               	/* epilogue start */
+ 210:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "1: sbiw %0,1" "\n\t" // 2 cycles
+ 211:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           "brne 1b" : "=w" (us) : "0" (us) // 2 cycles
+ 212:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****                           );
+ 213:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // return = 4 cycles
+ 214:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 566               	.LM44:
+ 567 021c 0895      		ret
+ 569               	.Lscope5:
+ 571               	.global	init
+ 573               	init:
+ 215:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** 
+ 216:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** void init(){
+ 575               	.LM45:
+ 576               	.LFBB6:
+ 577               	/* prologue: function */
+ 578               	/* frame size = 0 */
+ 579               	/* stack size = 0 */
+ 580               	.L__stack_usage = 0
+ 217:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this needs to be called before setup() or some functions won't
+ 218:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // work there
+ 219:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sei();
+ 582               	.LM46:
+ 583               	/* #APP */
+ 584               	 ;  219 "/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c" 1
+ 585 021e 7894      		sei
+ 586               	 ;  0 "" 2
+ 220:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 221:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // on the ATmega168, timer 0 is also used for fast hardware pwm
+ 222:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // (using phase-correct PWM would mean that timer 0 overflowed half as often
+ 223:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // resulting in different millis() behavior on the ATmega8 and ATmega168)
+ 224:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR0A) && defined(WGM01)
+ 225:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0A, WGM01);
+ 588               	.LM47:
+ 589               	/* #NOAPP */
+ 590 0220 80B7      		in r24,0x30
+ 591 0222 8260      		ori r24,lo8(2)
+ 592 0224 80BF      		out 0x30,r24
+ 226:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0A, WGM00);
+ 594               	.LM48:
+ 595 0226 80B7      		in r24,0x30
+ 596 0228 8160      		ori r24,lo8(1)
+ 597 022a 80BF      		out 0x30,r24
+ 227:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 228:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 229:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // set timer 0 prescale factor to 64
+ 230:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(__AVR_ATmega128__)
+ 231:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // CPU specific: different values for the ATmega128
+ 232:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0, CS02);
+ 233:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR0) && defined(CS01) && defined(CS00)
+ 234:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this combination is for the standard atmega8
+ 235:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0, CS01);
+ 236:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0, CS00);
+ 237:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR0B) && defined(CS01) && defined(CS00)
+ 238:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this combination is for the standard 168/328/1280/2560
+ 239:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0B, CS01);
+ 599               	.LM49:
+ 600 022c 83B7      		in r24,0x33
+ 601 022e 8260      		ori r24,lo8(2)
+ 602 0230 83BF      		out 0x33,r24
+ 240:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0B, CS00);
+ 604               	.LM50:
+ 605 0232 83B7      		in r24,0x33
+ 606 0234 8160      		ori r24,lo8(1)
+ 607 0236 83BF      		out 0x33,r24
+ 241:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR0A) && defined(CS01) && defined(CS00)
+ 242:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this combination is for the __AVR_ATmega645__ series
+ 243:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0A, CS01);
+ 244:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR0A, CS00);
+ 245:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+ 246:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #error Timer 0 prescale factor 64 not set correctly
+ 247:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 248:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 249:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // enable timer 0 overflow interrupt
+ 250:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TIMSK) && defined(TOIE0)
+ 251:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TIMSK, TOIE0);
+ 252:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TIMSK0) && defined(TOIE0)
+ 253:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TIMSK0, TOIE0);
+ 609               	.LM51:
+ 610 0238 89B7      		in r24,0x39
+ 611 023a 8160      		ori r24,lo8(1)
+ 612 023c 89BF      		out 0x39,r24
+ 254:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+ 255:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #error    Timer 0 overflow interrupt not set correctly
+ 256:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 257:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 258:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // timers 1 and 2 are used for phase-correct hardware pwm
+ 259:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this is better for motors as it ensures an even waveform
+ 260:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // note, however, that fast pwm mode can achieve a frequency of up
+ 261:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // 8 MHz (with a 16 MHz clock) at 50% duty cycle
+ 262:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 263:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     TCCR1B = 0;
+ 614               	.LM52:
+ 615 023e 1EBC      		out 0x2e,__zero_reg__
+ 264:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 265:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // set timer 1 prescale factor to 64
+ 266:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR1B) && defined(CS11) && defined(CS10)
+ 267:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR1B, CS11);
+ 617               	.LM53:
+ 618 0240 8EB5      		in r24,0x2e
+ 619 0242 8260      		ori r24,lo8(2)
+ 620 0244 8EBD      		out 0x2e,r24
+ 268:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR1B, CS10);
+ 622               	.LM54:
+ 623 0246 8EB5      		in r24,0x2e
+ 624 0248 8160      		ori r24,lo8(1)
+ 625 024a 8EBD      		out 0x2e,r24
+ 269:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR1) && defined(CS11) && defined(CS10)
+ 270:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR1, CS11);
+ 271:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR1, CS10);
+ 272:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 273:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // put timer 1 in 8-bit phase correct pwm mode
+ 274:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR1A) && defined(WGM10)
+ 275:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR1A, WGM10);
+ 627               	.LM55:
+ 628 024c 8FB5      		in r24,0x2f
+ 629 024e 8160      		ori r24,lo8(1)
+ 630 0250 8FBD      		out 0x2f,r24
+ 276:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR1)
+ 277:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #warning this needs to be finished
+ 278:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 279:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 280:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // set timer 2 prescale factor to 64
+ 281:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR2) && defined(CS22)
+ 282:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR2, CS22);
+ 283:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR2B) && defined(CS22)
+ 284:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR2B, CS22);
+ 285:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+ 286:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #warning Timer 2 not finished (may not be present on this CPU)
+ 287:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 288:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 289:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // configure timer 2 for phase correct pwm (8-bit)
+ 290:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR2) && defined(WGM20)
+ 291:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR2, WGM20);
+ 292:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(TCCR2A) && defined(WGM20)
+ 293:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR2A, WGM20);
+ 294:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #else
+ 295:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #warning Timer 2 not finished (may not be present on this CPU)
+ 296:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 297:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 298:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR3B) && defined(CS31) && defined(WGM30)
+ 299:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR3B, CS31);        // set timer 3 prescale factor to 64
+ 300:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR3B, CS30);
+ 301:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR3A, WGM30);        // put timer 3 in 8-bit phase correct pwm mode
+ 302:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 303:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 304:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR4B) && defined(CS41) && defined(WGM40)
+ 305:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR4B, CS41);        // set timer 4 prescale factor to 64
+ 306:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR4B, CS40);
+ 307:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR4A, WGM40);        // put timer 4 in 8-bit phase correct pwm mode
+ 308:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 309:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 310:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(TCCR5B) && defined(CS51) && defined(WGM50)
+ 311:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR5B, CS51);        // set timer 5 prescale factor to 64
+ 312:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR5B, CS50);
+ 313:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(TCCR5A, WGM50);        // put timer 5 in 8-bit phase correct pwm mode
+ 314:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 315:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 316:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(ADCSRA)
+ 317:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // set a2d prescale factor to 128
+ 318:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // 16 MHz / 128 = 125 KHz, inside the desired 50-200 KHz range.
+ 319:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // XXX: this will not work properly for other clock speeds, and
+ 320:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // this code should use F_CPU to determine the prescale factor.
+ 321:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(ADCSRA, ADPS2);
+ 632               	.LM56:
+ 633 0252 329A      		sbi 0x6,2
+ 322:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(ADCSRA, ADPS1);
+ 635               	.LM57:
+ 636 0254 319A      		sbi 0x6,1
+ 323:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(ADCSRA, ADPS0);
+ 638               	.LM58:
+ 639 0256 309A      		sbi 0x6,0
+ 324:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 325:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // enable a2d conversions
+ 326:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     sbi(ADCSRA, ADEN);
+ 641               	.LM59:
+ 642 0258 379A      		sbi 0x6,7
+ 643               	/* epilogue start */
+ 327:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 328:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     
+ 329:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // the bootloader connects pins 0 and 1 to the USART; disconnect them
+ 330:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // here so they can be used as normal digital i/o; they will be
+ 331:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     // reconnected in Serial.begin()
+ 332:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #if defined(UCSRB)
+ 333:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     UCSRB = 0;
+ 334:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #elif defined(UCSR0B)
+ 335:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c ****     UCSR0B = 0;
+ 336:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** #endif
+ 337:/Users/javier/Documents/MCU/Reflow Final/Reflow/Reflow/nuts_bolts.c **** }
+ 645               	.LM60:
+ 646 025a 0895      		ret
+ 648               	.Lscope6:
+ 649               		.local	timer0_fract
+ 650               		.comm	timer0_fract,1,1
+ 652               	.global	timer0_millis
+ 653               		.section .bss
+ 656               	timer0_millis:
+ 657 0000 0000 0000 		.zero	4
+ 659               	.global	timer0_overflow_count
+ 662               	timer0_overflow_count:
+ 663 0004 0000 0000 		.zero	4
+ 665               		.comm	relay_state,2,1
+ 667               		.comm	summation,4,1
+ 669               		.comm	targetTemperature,2,1
+ 671               		.comm	adc,2,1
+ 673               		.comm	profiles,92,1
+ 675               		.comm	isInitialChoiceState,1,1
+ 677               		.comm	isInitialState,1,1
+ 679               		.comm	profileSelected,1,1
+ 681               		.comm	selectedProfile,1,1
+ 683               		.comm	input,1,1
+ 685               		.comm	stopped,1,1
+ 687               		.comm	started,1,1
+ 689               		.text
+ 691               	.Letext0:
+ 692               		.ident	"GCC: (Homebrew AVR GCC 9.3.0_3) 9.3.0"
+ 693               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 nuts_bolts.c
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:2      *ABS*:000000000000003e __SP_H__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:3      *ABS*:000000000000003d __SP_L__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:4      *ABS*:000000000000003f __SREG__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:5      *ABS*:0000000000000000 __tmp_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:6      *ABS*:0000000000000001 __zero_reg__
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:156    .text:0000000000000000 map
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:289    .text:00000000000000d0 __vector_11
+                            *ABS*:0000000000000003 __gcc_isr.n_pushed.001
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:656    .bss:0000000000000000 timer0_millis
+                             .bss:0000000000000008 timer0_fract
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:662    .bss:0000000000000004 timer0_overflow_count
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:375    .text:0000000000000160 millis
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:435    .text:00000000000001a0 micros
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:533    .text:0000000000000208 delayMicroseconds
+/var/folders/1k/6p2kzlp94clgxh5959kxhz980000gn/T//ccjeJe0g.s:573    .text:000000000000021e init
+                            *COM*:0000000000000002 relay_state
+                            *COM*:0000000000000004 summation
+                            *COM*:0000000000000002 targetTemperature
+                            *COM*:0000000000000002 adc
+                            *COM*:000000000000005c profiles
+                            *COM*:0000000000000001 isInitialChoiceState
+                            *COM*:0000000000000001 isInitialState
+                            *COM*:0000000000000001 profileSelected
+                            *COM*:0000000000000001 selectedProfile
+                            *COM*:0000000000000001 input
+                            *COM*:0000000000000001 stopped
+                            *COM*:0000000000000001 started
+
+UNDEFINED SYMBOLS
+__mulsi3
+__divmodsi4
+__do_clear_bss
