@@ -1,6 +1,5 @@
 #include "machine.h"
 
-
 #define SELECT          (SELECT_BUTTON_PIN & SELECT_BUTTON_MASK)
 #define NEXT            (NEXT_BUTTON_PIN & NEXT_BUTTON_MASK)
 #define CHOICES_COUNT   4
